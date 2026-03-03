@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control</title>
+<style>
+:root {
+  --bg: #000000;
+  --surface: #0a0a0a;
+  --border: #1a1a1a;
+  --border-hover: #2a2a2a;
+  --text: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #525252;
+  --accent: #6366f1;
+  --green: #22c55e;
+  --yellow: #f59e0b;
+  --red: #ef4444;
+  --blue: #3b82f6;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h1 {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sidebar-search {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-search input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sidebar-search input:focus {
+  outline: none;
+  border-color: var(--border-hover);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 6px;
+  overflow: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.nav-item:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.nav-icon {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+.sidebar-user {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Main content */
+.main {
+  margin-left: 220px;
+  padding: 0;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.stat-value.green { color: var(--green); }
+.stat-value.blue { color: var(--blue); }
+.stat-value.yellow { color: var(--yellow); }
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.filter {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Kanban board */
+.board {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  height: calc(100vh - 180px);
+  overflow: auto;
+}
+
+.column {
+  flex: 1;
+  min-width: 280px;
+  background: var(--surface);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-dot.purple { background: #8b5cf6; }
+.status-dot.blue { background: #3b82f6; }
+.status-dot.orange { background: #f59e0b; }
+.status-dot.green { background: #22c55e; }
+
+.column-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.column-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.tasks {
+  flex: 1;
+  padding: 8px;
+  overflow: auto;
+}
+
+.task-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.task-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.priority-dot.high { background: var(--red); }
+.priority-dot.medium { background: var(--yellow); }
+.priority-dot.low { background: var(--text-muted); }
+
+.task-title {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.task-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.task-tag {
+  display: inline-block;
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.task-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.task-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--green), #34d399);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.task-time {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Activity sidebar */
+.activity-sidebar {
+  width: 280px;
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  overflow: auto;
+}
+
+.activity-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.activity-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-agent {
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.activity-agent.scout { color: var(--green); }
+.activity-agent.henry { color: var(--blue); }
+.activity-agent.quill { color: #8b5cf6; }
+
+.activity-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.activity-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Calendar view */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin: 24px;
+  border: 1px solid var(--border);
+}
+
+.calendar-day {
+  background: var(--bg);
+  min-height: 120px;
+  padding: 8px;
+}
+
+.calendar-day-header {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.calendar-day-number {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.calendar-event {
+  background: var(--accent);
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+/* Docs view */
+.docs-list {
+  padding: 24px;
+}
+
+.doc-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.doc-item:hover {
+  border-color: var(--border-hover);
+}
+
+.doc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.doc-type {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.doc-type.newsletter { background: #8b5cf6/20; color: #a78bfa; }
+.doc-type.briefing { background: #3b82f6/20; color: #93c5fd; }
+.doc-type.research { background: #22c55e/20; color: #86efac; }
+
+.doc-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.doc-preview {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Memory view */
+.memory-timeline {
+  padding: 24px;
+}
+
+.memory-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.memory-date-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.memory-date-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.memory-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  margin-left: 16px;
+}
+
+.memory-type {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.memory-type.daily { background: #3b82f6/20; color: #93c5fd; }
+.memory-type.learning { background: #22c55e/20; color: #86efac; }
+.memory-type.decision { background: #f59e0b/20; color: #fcd34d; }
+
+.memory-content {
+  font-size: 12px;
+  line-height: 1.5;
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>⚡ Mission Control</h1>
+  </div>
+  <div class="sidebar-search">
+    <input type="text" placeholder="Search tasks, docs, memory...">
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="switchView('tasks')">
+      <span class="nav-icon">▦</span>
+      <span>Tasks</span>
+    </div>
+    <div class="nav-item" onclick="switchView('calendar')">
+      <span class="nav-icon">📅</span>
+      <span>Calendar</span>
+    </div>
+    <div class="nav-item" onclick="switchView('docs')">
+      <span class="nav-icon">📄</span>
+      <span>Docs</span>
+    </div>
+    <div class="nav-item" onclick="switchView('memory')">
+      <span class="nav-icon">🧠</span>
+      <span>Memory</span>
+    </div>
+    <div class="nav-item" onclick="switchView('projects')">
+      <span class="nav-icon">📁</span>
+      <span>Projects</span>
+    </div>
+    <div class="nav-item" onclick="switchView('agents')">
+      <span class="nav-icon">👥</span>
+      <span>Agents</span>
+    </div>
+    <div class="nav-item" onclick="switchView('dashboard')">
+      <span class="nav-icon">📊</span>
+      <span>Dashboard</span>
+    </div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-avatar">Z</div>
+    <span style="font-size: 12px;">Zak</span>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+  
+  <!-- TASKS VIEW -->
+  <div class="view active" id="tasks-view">
+    <div class="stats-bar">
+      <div class="stat">
+        <span class="stat-value green">19</span>
+        <span class="stat-label">This week</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value blue">3</span>
+        <span class="stat-label">In progress</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">42</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn">+ New task</button>
+      <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+        <span style="font-size: 11px; color: var(--text-muted);">Alex</span>
+        <div class="task-avatar">A</div>
+        <span style="font-size: 11px; color: var(--text-muted);">Henry</span>
+        <div class="task-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">H</div>
+        <select class="filter">
+          <option>All projects</option>
+        </select>
+      </div>
+    </div>
+    <div class="board">
+      <!-- Recurring -->
+      <div class="column">
+        <div class="column-header">
+          <div class="status-dot purple"></div>
+          <span class="column-title">Recurring</span>
+          <span class="column-count">0</span>
+        </div>
+        <div class="tasks"></div>
+      </div>
+      <!-- Backlog -->
+      <div class="column">
+        <div class="column-header">
+          <div class="status-dot" style="background: var(--text-muted);"></div>
+          <span class="column-title">Backlog</span>
+          <span class="column-count">4</span>
+        </div>
+        <div class="tasks">
+          <div class="task-card">
+            <div class="task-header">
+              <div class="priority-dot medium"></div>
+              <span class="task-title">Record Claude Code video</span>
+            </div>
+            <div class="task-desc">Film the "I deleted all my AI tools" video</div>
+            <div class="task-tag">YouTube</div>
+            <div class="task-footer">
+              <div class="task-avatar">A</div>
+              <span class="task-time">1 min ago</span>
+            </div>
+          </div>
+          <div class="task-card">
+            <div class="task-header">
+              <div class="priority-dot medium"></div>
+              <span class="task-title">Flesh out $10K Mac use cases</span>
+            </div>
+            <div class="task-desc">Develop and prioritize use cases for Mac Studio M3 Ultra</div>
+            <div class="task-tag">Clawdbot</div>
+            <div class="task-footer">
+              <div class="task-avatar">A</div>
+              <span class="task-time">1 min ago</span>
+            </div>
+          </div>
+          <div class="task-card">
+            <div class="task-header">
+              <div class="priority-dot low"></div>
+              <span class="task-title">Pre train a local model</span>
+            </div>
+            <div class="task-footer">
+              <span class="task-time">5 min ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- In Progress -->
+      <div class="column">
+        <div class="column-header">
+          <div class="status-dot blue"></div>
+          <span class="column-title">In Progress</span>
+          <span class="column-count">3</span>
+        </div>
+        <div class="tasks">
+          <div class="task-card">
+            <div class="task-header">
+              <div class="priority-dot high"></div>
+              <span class="task-title">Build Council - Societ...</span>
+            </div>
+            <div class="task-desc">Multi-model deliberation system (Kimi K2.5, etc.) distributed across...</div>
+            <div class="task-footer">
+              <div class="task-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">H</div>
+              <span class="task-time">1 min ago</span>
+            </div>
+          </div>
+          <div class="task-card">
+            <div class="task-header">
+              <div class="priority-dot medium"></div>
+              <span class="task-title">Research Exo Labs du...</span>
+            </div>
+            <div class="task-desc">Prep guide for running large models distributed across...</div>
+            <div class="task-footer">
+              <div class="task-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">H</div>
+              <span class="task-time">1 min ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Review -->
+      <div class="column">
+        <div class="column-header">
+          <div class="status-dot orange"></div>
+          <span class="column-title">Review</span>
+          <span class="column-count">0</span>
+        </div>
+        <div class="tasks"></div>
+      </div>
+      <!-- Done -->
+      <div class="column">
+        <div class="column-header">
+          <div class="status-dot green"></div>
+          <span class="column-title">Done</span>
+          <span class="column-count">19</span>
+        </div>
+        <div class="tasks">
+          <!-- Done tasks would go here -->
+        </div>
+      </div>
+    </div>
+    <div class="activity-sidebar">
+      <div class="activity-title">⚡ Live Activity</div>
+      <div class="activity-item">
+        <div class="activity-agent scout">Scout</div>
+        <div class="activity-text">4 trends: Claude presentation</div>
+        <div class="activity-time">Code finance app, UdI roasting</div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-agent quill">Quill</div>
+        <div class="activity-text">Script: Claude Code Agent Te...</div>
+        <div class="activity-time">Everything</div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-agent henry">Henry</div>
+        <div class="activity-text">Completed: System Status D...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR VIEW -->
+  <div class="view" id="calendar-view">
+    <div class="calendar-grid">
+      <!-- Days will be populated by JS -->
+    </div>
+  </div>
+
+  <!-- DOCS VIEW -->
+  <div class="view" id="docs-view">
+    <div class="toolbar">
+      <input class="filter" type="text" placeholder="Search documents..." style="width: 300px;">
+      <select class="filter">
+        <option>All types</option>
+        <option>Newsletter</option>
+        <option>Briefing</option>
+        <option>Research</option>
+      </select>
+    </div>
+    <div class="docs-list">
+      <div class="doc-item">
+        <div class="doc-header">
+          <span class="doc-type newsletter">Newsletter</span>
+          <span class="doc-title">byqqa #7: The Invisible Tax</span>
+        </div>
+        <div class="doc-preview">There's a tax on founders that nobody talks about. It's not revenue share, not equity dilution...</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-header">
+          <span class="doc-type briefing">Briefing</span>
+          <span class="doc-title">Morning Briefing 2026-03-03</span>
+        </div>
+        <div class="doc-preview">Good morning Zak. Here's what's happening today: Portfolio Sync at 14:00, 3 new inbound leads...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMORY VIEW -->
+  <div class="view" id="memory-view">
+    <div class="toolbar">
+      <button class="btn">+ New memory</button>
+      <input class="filter" type="text" placeholder="Search memory..." style="margin-left: auto; width: 300px;">
+    </div>
+    <div class="memory-timeline">
+      <div class="memory-date">
+        <div class="memory-date-dot"></div>
+        <span class="memory-date-text">March 3, 2026</span>
+      </div>
+      <div class="memory-card">
+        <span class="memory-type decision">Decision</span>
+        <div class="memory-content">Switched all agents to Qwen 3.5 Plus via OpenRouter. No more Claude dependency. OpenRouter credits (~$500+) now primary funding source.</div>
+      </div>
+      <div class="memory-card">
+        <span class="memory-type learning">Learning</span>
+        <div class="memory-content">Mission Control dashboard deployed to Vercel. Linear-inspired design with real-time agent metrics, MRR tracking, and activity feed.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTS VIEW -->
+  <div class="view" id="projects-view">
+    <div class="toolbar">
+      <button class="btn">+ New project</button>
+    </div>
+    <div class="board" style="height: auto;">
+      <div class="column" style="margin: 24px; min-width: 350px;">
+        <div class="column-header">
+          <span class="column-title">byqqa Empire Building</span>
+        </div>
+        <div style="padding: 16px;">
+          <div style="font-size: 28px; font-weight: 600; margin-bottom: 8px;">67%</div>
+          <div style="height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 12px;">
+            <div style="height: 100%; width: 67%; background: var(--accent); border-radius: 2px;"></div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted);">16/24 tasks complete</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(view + '-view').classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// Populate calendar
+function initCalendar() {
+  const grid = document.querySelector('.calendar-grid');
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const today = new Date();
+  
+  // Header row
+  days.forEach(day => {
+    const header = document.createElement('div');
+    header.className = 'calendar-day-header';
+    header.style.background = 'var(--surface)';
+    header.style.padding = '8px';
+    header.style.fontWeight = '600';
+    header.style.fontSize = '11px';
+    header.textContent = day;
+    grid.appendChild(header);
+  });
+  
+  // Simple 4 weeks
+  for (let i = 0; i < 28; i++) {
+    const day = document.createElement('div');
+    day.className = 'calendar-day';
+    day.innerHTML = `
+      <div class="calendar-day-number">${i + 1}</div>
+    `;
+    grid.appendChild(day);
+  }
+}
+
+initCalendar();
+</script>
+
+</body>
+</html>
