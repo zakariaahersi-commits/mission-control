@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mr Q — Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#1a1a2e;--surface:#16213e;--panel:#0f3460;--accent:#e94560;--green:#00ff41;--yellow:#ffd700;--red:#ff4444;--blue:#00d4ff;--text:#c0c0c0;--bright:#ffffff;--border-light:#808080;--border-dark:#404040}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;font-size:13px;min-height:100vh}
+.win95-border{border:2px solid;border-color:var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);background:var(--surface)}
+.win95-inset{border:2px solid;border-color:var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);background:var(--bg)}
+.titlebar{background:linear-gradient(90deg,#000080,#1084d0);color:#fff;padding:3px 6px;font-weight:bold;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.titlebar .buttons span{display:inline-block;width:16px;height:14px;text-align:center;line-height:14px;font-size:10px;background:#c0c0c0;border:1px outset #fff;margin-left:2px;cursor:pointer;color:#000}
+header{padding:8px 12px;display:flex;align-items:center;gap:16px;border-bottom:2px solid var(--border-dark)}
+header h1{font-size:16px;color:var(--green)}
+.tabs{display:flex;gap:2px;padding:4px 12px 0;background:var(--bg)}
+.tab{padding:6px 14px;cursor:pointer;background:var(--surface);border:2px solid;border-color:var(--border-light) var(--border-dark) var(--bg) var(--border-light);border-bottom:none;color:var(--text);font-family:inherit;font-size:12px;position:relative;top:2px}
+.tab.active{background:var(--panel);color:var(--bright);border-bottom:2px solid var(--panel);z-index:1}
+.tab:hover:not(.active){background:var(--border-dark)}
+.tab-content{display:none;padding:12px}
+.tab-content.active{display:block}
+.content-area{border-top:2px solid var(--border-light);background:var(--panel);min-height:calc(100vh - 90px);padding:0}
+.grid{display:grid;gap:10px;padding:4px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+.card{padding:10px}
+.card h3{color:var(--blue);font-size:13px;margin-bottom:6px;border-bottom:1px solid var(--border-dark);padding-bottom:4px}
+.metric{font-size:22px;font-weight:bold;color:var(--bright)}
+.metric-label{font-size:11px;color:var(--text);margin-top:2px}
+.status-live{color:var(--green)}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.progress-bar{height:18px;background:var(--bg);border:1px solid var(--border-dark);margin:4px 0;position:relative}
+.progress-fill{height:100%;transition:width .5s}
+.progress-text{position:absolute;top:0;left:0;right:0;text-align:center;line-height:18px;font-size:11px;color:var(--bright)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:4px 8px;text-align:left;border-bottom:1px solid var(--border-dark)}
+th{color:var(--blue);font-size:11px}
+.green{color:var(--green)}.yellow{color:var(--yellow)}.red{color:var(--red)}
+.chart-box{position:relative;height:220px;margin:6px 0}
+.countdown{font-size:18px;color:var(--accent);font-weight:bold}
+.tag{display:inline-block;padding:2px 8px;font-size:11px;margin:2px;border:1px solid}
+.tag-green{border-color:var(--green);color:var(--green)}
+.tag-yellow{border-color:var(--yellow);color:var(--yellow)}
+.tag-red{border-color:var(--red);color:var(--red)}
+.tag-blue{border-color:var(--blue);color:var(--blue)}
+.funnel-row{display:flex;align-items:center;gap:8px;margin:3px 0}
+.funnel-bar{height:22px;background:var(--accent);min-width:2px;display:flex;align-items:center;padding:0 6px;font-size:11px;color:#fff}
+.funnel-label{width:120px;text-align:right;font-size:11px}
+.funnel-val{font-size:11px;margin-left:6px}
+footer{text-align:center;padding:6px;font-size:10px;color:var(--border-light)}
+@media(max-width:800px){.g2,.g3,.g4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="win95-border" style="margin:0;min-height:100vh">
+<div class="titlebar">
+<span>🎩 Mr Q — Command Center v2.0</span>
+<div class="buttons"><span>_</span><span>□</span><span>×</span></div>
+</div>
+<div class="tabs" id="tabs">
+<div class="tab active" onclick="switchTab('overview')">Overview</div>
+<div class="tab" onclick="switchTab('analyst')">📊 Analyst</div>
+<div class="tab" onclick="switchTab('doc')">🧬 Doc</div>
+<div class="tab" onclick="switchTab('mrq')">🎩 Mr Q</div>
+<div class="tab" onclick="switchTab('scout')">🔭 Scout</div>
+<div class="tab" onclick="switchTab('deliverables')">📋 Deliverables</div>
+</div>
+<div class="content-area">
+
+<!-- OVERVIEW -->
+<div class="tab-content active" id="overview">
+
+<!-- REVENUE TRACKER — TOP -->
+<div class="win95-border" style="margin-bottom:10px">
+<div class="titlebar" style="background:linear-gradient(90deg,#006400,#00aa00);font-size:15px">💰 REVENUE TRACKER — Target: $10K/month by June 2026</div>
+<div style="padding:14px">
+<div class="grid g4">
+<div class="card win95-inset"><h3>March</h3><div class="metric" style="font-size:28px;color:var(--yellow)">$0</div><div class="metric-label">Target: $6K</div><div style="margin-top:6px"><div class="progress-bar"><div class="progress-fill" style="width:0%;background:var(--yellow)"></div><div class="progress-text">0%</div></div></div></div>
+<div class="card win95-inset"><h3>April</h3><div class="metric" style="font-size:28px;color:var(--text)">—</div><div class="metric-label">Target: $11.5K</div></div>
+<div class="card win95-inset"><h3>May</h3><div class="metric" style="font-size:28px;color:var(--text)">—</div><div class="metric-label">Target: $16K</div></div>
+<div class="card win95-inset"><h3>June</h3><div class="metric" style="font-size:28px;color:var(--text)">—</div><div class="metric-label">Target: $18K 🎯</div></div>
+</div>
+<div class="grid g3" style="margin-top:8px">
+<div class="card win95-inset"><h3>🔗 TopUpScout (Affiliate)</h3><div class="metric" style="color:var(--yellow)">$0</div><div class="metric-label">Target: $1-3K/mo by April</div></div>
+<div class="card win95-inset"><h3>📰 The Playbook (Paid)</h3><div class="metric" style="color:var(--yellow)">$0</div><div class="metric-label">0 paid subs — Target: 250 by June</div></div>
+<div class="card win95-inset"><h3>🧠 AI Consulting</h3><div class="metric" style="color:var(--yellow)">$0</div><div class="metric-label">0 clients — Target: 2-3 retainers</div></div>
+</div>
+<div style="text-align:center;margin-top:10px;padding:8px;border-top:1px solid var(--border-dark)">
+<div class="progress-bar" style="height:28px"><div class="progress-fill" style="width:0%;background:linear-gradient(90deg,var(--green),var(--yellow))"></div><div class="progress-text" style="line-height:28px;font-size:14px;font-weight:bold">$0 / $10,000 MRR (0%)</div></div>
+</div>
+</div>
+</div>
+
+<!-- COST TRACKER — TOP -->
+<div class="win95-border" style="margin-bottom:10px">
+<div class="titlebar" style="background:linear-gradient(90deg,#8b0000,#cc0000);font-size:15px">📉 COST TRACKER — API & Infrastructure</div>
+<div style="padding:14px">
+<div class="grid g4">
+<div class="card win95-inset"><h3>🎩 Mr Q</h3><div class="metric" style="font-size:28px;color:var(--accent)">$99.51</div><div class="metric-label">47 sessions</div><div style="margin-top:6px"><div style="background:var(--border-dark);height:12px;border-radius:2px"><div style="background:var(--accent);width:93%;height:100%;border-radius:2px"></div></div></div></div>
+<div class="card win95-inset"><h3>📊 Analyst</h3><div class="metric" style="font-size:28px;color:var(--blue)">$5.27</div><div class="metric-label">2 sessions</div><div style="margin-top:6px"><div style="background:var(--border-dark);height:12px;border-radius:2px"><div style="background:var(--blue);width:5%;height:100%;border-radius:2px"></div></div></div></div>
+<div class="card win95-inset"><h3>🔭 Scout</h3><div class="metric" style="font-size:28px;color:var(--yellow)">$1.58</div><div class="metric-label">2 sessions</div><div style="margin-top:6px"><div style="background:var(--border-dark);height:12px;border-radius:2px"><div style="background:var(--yellow);width:1.5%;height:100%;border-radius:2px"></div></div></div></div>
+<div class="card win95-inset"><h3>🧬 Doc</h3><div class="metric" style="font-size:28px;color:var(--green)">$0.91</div><div class="metric-label">2 sessions</div><div style="margin-top:6px"><div style="background:var(--border-dark);height:12px;border-radius:2px"><div style="background:var(--green);width:0.8%;height:100%;border-radius:2px"></div></div></div></div>
+</div>
+<div style="text-align:center;margin-top:10px;padding:8px;border-top:1px solid var(--border-dark)">
+<span style="font-size:22px;font-weight:bold;color:var(--bright)">TOTAL: $107.27</span>
+<span style="color:var(--text);margin-left:12px">| Model: Claude Opus 4 | 53 sessions | Last updated: Mar 2, 2026</span>
+</div>
+</div>
+</div>
+
+<!-- AGENT STATUS -->
+<div class="grid g4" style="margin-bottom:10px">
+<div class="card win95-border"><h3><span class="status-dot"></span>📊 Analyst</h3><div class="status-live">✅ LIVE</div><div class="metric-label">Deal Pipeline & IC Prep</div></div>
+<div class="card win95-border"><h3><span class="status-dot"></span>🧬 Doc</h3><div class="status-live">✅ LIVE</div><div class="metric-label">Health & Performance</div></div>
+<div class="card win95-border"><h3><span class="status-dot"></span>🎩 Mr Q</h3><div class="status-live">✅ LIVE</div><div class="metric-label">Chief of Staff</div></div>
+<div class="card win95-border"><h3><span class="status-dot"></span>🔭 Scout</h3><div class="status-live">✅ LIVE</div><div class="metric-label">TopUpScout</div></div>
+</div>
+<div class="grid g3">
+<div class="card win95-border"><h3>Newsletter Subs</h3><div class="metric">176</div><div class="metric-label">byqqa subscribers</div></div>
+<div class="card win95-border"><h3>Deal Applications</h3><div class="metric">337</div><div class="metric-label">total pipeline</div></div>
+<div class="card win95-border"><h3>Investments</h3><div class="metric" style="color:var(--green)">5</div><div class="metric-label">portfolio companies</div></div>
+</div>
+<div class="grid g4" style="margin-top:10px">
+<div class="card win95-border"><h3>🧬 DNA</h3><div class="metric green">✅</div><div class="metric-label">23andMe analyzed</div></div>
+<div class="card win95-border"><h3>🎯 Priority Cos</h3><div class="metric" style="color:var(--yellow)">5</div><div class="metric-label">flagged for upgrade</div></div>
+<div class="card win95-border"><h3>🚀 FirstLap</h3><div class="metric green">PRD</div><div class="metric-label">shipped (453 lines)</div></div>
+<div class="card win95-border"><h3>Weight</h3><div class="metric">108<span style="font-size:14px">kg</span></div><div class="metric-label">current</div></div>
+</div>
+<div class="grid g3" style="margin-top:10px">
+<div class="card win95-border">
+<h3>🏋️ Hyrox Countdown</h3>
+<div class="countdown" id="hyrox-countdown-overview"></div>
+<div class="metric-label">May 9, 2026</div>
+</div>
+<div class="card win95-border">
+<h3>🎤 Off Plan #1</h3>
+<div class="countdown" id="offplan-countdown-overview"></div>
+<div class="metric-label">March 24, 2026</div>
+</div>
+<div class="card win95-border">
+<h3>📊 Pipeline</h3>
+<div class="metric">337 → <span style="color:var(--green)">5</span></div>
+<div class="metric-label">apps → invested (1.5%)</div>
+</div>
+</div>
+
+<!-- Cost tracker moved to top -->
+</div>
+
+<!-- ANALYST -->
+<div class="tab-content" id="analyst">
+<div class="grid g2">
+<div class="card win95-border">
+<h3>Deal Pipeline Funnel — 337 Applications</h3>
+<div id="funnel-container">
+<div class="funnel-row"><span class="funnel-label">Passed</span><div class="funnel-bar" style="width:calc(162/337*100%);background:#e94560">162</div></div>
+<div class="funnel-row"><span class="funnel-label">No</span><div class="funnel-bar" style="width:calc(83/337*100%);background:#ff6b6b">83</div></div>
+<div class="funnel-row"><span class="funnel-label">Tracking</span><div class="funnel-bar" style="width:calc(40/337*100%);background:#ffd700">40</div></div>
+<div class="funnel-row"><span class="funnel-label">Initial Dialogue</span><div class="funnel-bar" style="width:calc(33/337*100%);background:#00d4ff">33</div></div>
+<div class="funnel-row"><span class="funnel-label">In-depth</span><div class="funnel-bar" style="width:calc(7/337*100%);background:#00ff41">7</div></div>
+<div class="funnel-row"><span class="funnel-label">New</span><div class="funnel-bar" style="width:calc(5/337*100%);background:#c0c0c0">5</div></div>
+<div class="funnel-row"><span class="funnel-label">Invested</span><div class="funnel-bar" style="width:calc(5/337*100%);background:#00ff41">5</div></div>
+<div class="funnel-row"><span class="funnel-label">DD</span><div class="funnel-bar" style="width:calc(1/337*100%);min-width:30px;background:#ffd700">1</div></div>
+<div class="funnel-row"><span class="funnel-label">Term Sheet</span><div class="funnel-bar" style="width:calc(1/337*100%);min-width:30px;background:#e94560">1</div></div>
+</div>
+<div style="margin-top:8px"><span class="tag tag-green">Conversion: 1.5%</span></div>
+</div>
+<div>
+<div class="card win95-border" style="margin-bottom:10px">
+<h3>Applications by Year</h3>
+<div class="chart-box"><canvas id="yearChart"></canvas></div>
+</div>
+<div class="card win95-border">
+<h3>Active Pipeline 🔥</h3>
+<table>
+<tr><th>Company</th><th>Stage</th><th>Status</th></tr>
+<tr><td style="color:var(--bright)">Nuroe</td><td><span class="tag tag-yellow">DD</span></td><td class="yellow">In progress</td></tr>
+<tr><td style="color:var(--bright)">[Confidential]</td><td><span class="tag tag-red">Term Sheet</span></td><td class="red">Active</td></tr>
+</table>
+</div>
+</div>
+</div>
+<div class="card win95-border" style="margin:10px 4px">
+<h3>🎯 Thesis Cross-Reference — Priority Pipeline</h3>
+<div class="metric-label" style="margin-bottom:8px">337 applications scored against Thematic Focus 2024 + Last Mile Distribution 2025</div>
+<table>
+<tr><th>Rating</th><th>Company</th><th>Action</th><th>Why</th></tr>
+<tr style="background:rgba(0,255,65,0.08)"><td>⭐⭐⭐⭐⭐</td><td style="color:var(--bright)">clare&me</td><td><span class="tag tag-red" style="border-color:var(--accent);color:var(--accent)">UPGRADE NOW</span></td><td>AI CBT, Charité validated</td></tr>
+<tr style="background:rgba(0,255,65,0.08)"><td>⭐⭐⭐⭐⭐</td><td style="color:var(--bright)">Earkick</td><td><span class="tag tag-red" style="border-color:var(--accent);color:var(--accent)">UPGRADE NOW</span></td><td>GenZ MH companion, outcome data</td></tr>
+<tr style="background:rgba(0,255,65,0.08)"><td>⭐⭐⭐⭐⭐</td><td style="color:var(--bright)">Camber Collective</td><td><span class="tag tag-yellow">Accelerate</span></td><td>Climate+MH Sub-Saharan Africa</td></tr>
+<tr style="background:rgba(0,255,65,0.08)"><td>⭐⭐⭐⭐⭐</td><td style="color:var(--bright)">Nuroe</td><td><span class="tag tag-green">Continue DD</span></td><td>Cognitive training, clinical evidence</td></tr>
+<tr><td>⭐⭐⭐⭐</td><td style="color:var(--text)">Chamberly</td><td><span class="tag tag-yellow">Upgrade</span></td><td rowspan="5" style="color:var(--text);font-style:italic">Various stage upgrades needed</td></tr>
+<tr><td>⭐⭐⭐⭐</td><td style="color:var(--text)">Empatik</td><td><span class="tag tag-yellow">Upgrade</span></td></tr>
+<tr><td>⭐⭐⭐⭐</td><td style="color:var(--text)">nafsi huru</td><td><span class="tag tag-yellow">Upgrade</span></td></tr>
+<tr><td>⭐⭐⭐⭐</td><td style="color:var(--text)">StoriBoard</td><td><span class="tag tag-yellow">Upgrade</span></td></tr>
+<tr><td>⭐⭐⭐⭐</td><td style="color:var(--text)">Letterlife</td><td><span class="tag tag-yellow">Upgrade</span></td></tr>
+</table>
+<div style="margin-top:12px">
+<div class="metric-label" style="margin-bottom:6px">Conversion Funnel</div>
+<div class="funnel-row"><span class="funnel-label">Applied</span><div class="funnel-bar" style="width:100%;background:#808080">337</div></div>
+<div class="funnel-row"><span class="funnel-label">Active</span><div class="funnel-bar" style="width:27%;background:var(--blue)">92</div></div>
+<div class="funnel-row"><span class="funnel-label">In-depth</span><div class="funnel-bar" style="width:6%;min-width:30px;background:var(--yellow)">7</div></div>
+<div class="funnel-row"><span class="funnel-label">DD</span><div class="funnel-bar" style="width:3%;min-width:30px;background:var(--accent)">1</div></div>
+<div class="funnel-row"><span class="funnel-label">Term Sheet</span><div class="funnel-bar" style="width:3%;min-width:30px;background:#ff6b6b">1</div></div>
+<div class="funnel-row"><span class="funnel-label">Invested</span><div class="funnel-bar" style="width:4%;min-width:30px;background:var(--green)">5</div></div>
+</div>
+</div>
+<div class="grid g3" style="margin-top:10px">
+<div class="card win95-border">
+<h3>Top Locations</h3>
+<table>
+<tr><td>Stockholm</td><td style="color:var(--bright)">~50</td></tr>
+<tr><td>Copenhagen</td><td style="color:var(--bright)">—</td></tr>
+<tr><td>Gothenburg</td><td style="color:var(--bright)">—</td></tr>
+<tr><td>Helsinki</td><td style="color:var(--bright)">—</td></tr>
+<tr><td>Nairobi</td><td style="color:var(--bright)">—</td></tr>
+</table>
+</div>
+<div class="card win95-border">
+<h3>Entity Type</h3>
+<div class="chart-box"><canvas id="entityChart"></canvas></div>
+</div>
+<div class="card win95-border">
+<h3>Pipeline Summary</h3>
+<table>
+<tr><td>Total</td><td class="metric" style="font-size:16px">337</td></tr>
+<tr><td>Invested</td><td style="color:var(--green)">5</td></tr>
+<tr><td>Active (DD+TS)</td><td style="color:var(--yellow)">2</td></tr>
+<tr><td>Conversion</td><td style="color:var(--accent)">1.5%</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- DOC -->
+<div class="tab-content" id="doc">
+
+<!-- LIFE EXPECTANCY PROJECTION -->
+<div class="win95-border" style="margin-bottom:10px">
+<div class="titlebar" style="background:linear-gradient(90deg,#8b0000,#cc0000);font-size:15px">⚠️ LIFE EXPECTANCY PROJECTION</div>
+<div style="padding:14px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+<div class="win95-inset" style="padding:12px;text-align:center;background:#2a0a0a">
+<div style="font-size:14px;color:#ff6b6b;margin-bottom:6px">CURRENT TRAJECTORY</div>
+<div style="font-size:48px;font-weight:bold;color:#ff4444;line-height:1">28</div>
+<div style="font-size:16px;color:#ff6b6b;margin-top:4px">YEARS LEFT</div>
+<div style="font-size:12px;color:#888;margin-top:8px">Death at ~69</div>
+</div>
+<div class="win95-inset" style="padding:12px;text-align:center;background:#0a2a0a">
+<div style="font-size:14px;color:#00ff41;margin-bottom:6px">OPTIMIZED TRAJECTORY</div>
+<div style="font-size:48px;font-weight:bold;color:#00ff41;line-height:1">44</div>
+<div style="font-size:16px;color:#00ff41;margin-top:4px">YEARS LEFT</div>
+<div style="font-size:12px;color:#888;margin-top:8px">Alive at ~85</div>
+</div>
+</div>
+<div style="text-align:center;padding:12px;border:2px solid #ffd700;margin:12px 0;background:#1a1a0a">
+<div style="font-size:28px;font-weight:bold;color:#ffd700;margin-bottom:4px">16 YEARS ON THE TABLE</div>
+<div style="font-size:12px;color:#888">The difference between dying at 69 and living to 85</div>
+</div>
+<div style="margin:12px 0;padding:10px;border-left:3px solid #ff4444;background:#1a0a0a">
+<div style="font-size:13px;color:#ff6b6b;margin-bottom:6px"><strong>Son turns 18 in 15 years.</strong></div>
+<div style="font-size:12px;color:#c0c0c0">Current trajectory: you'll be 56 with a body that's 60.</div>
+<div style="font-size:12px;color:#00ff41;margin-top:4px">Optimized: 56 with a body that's 48.</div>
+</div>
+<div style="margin:12px 0;padding:10px;border-left:3px solid #ff4444;background:#1a0a0a">
+<div style="font-size:13px;color:#ff6b6b;margin-bottom:6px"><strong>Son turns 30 in 27 years.</strong></div>
+<div style="font-size:12px;color:#ff4444">Current trajectory: you're dead at 69.</div>
+<div style="font-size:12px;color:#00ff41;margin-top:4px">Optimized: you're 71 and active.</div>
+</div>
+<div style="margin-top:12px;padding:10px;border:1px solid #404040">
+<div style="font-size:11px;color:#888;margin-bottom:6px"><strong>Current Profile (age 41, male, Somali-Swedish):</strong></div>
+<div style="font-size:11px;color:#c0c0c0;line-height:1.6">
+<strong style="color:#ff4444">⚠️ Risks:</strong> Weight 108kg, BMI 32 (obese) | WHOOP bio age 44.4 (+3.4y) | Garmin fitness age 43 | HRV 40.9ms (low) | Sleep consistency 69% | Vigorous min: 7/week | FTO obesity alleles (x3), PPARγ insulin resistance | Bilateral patella tendon rupture (2018, no rehab) | Active dental disease, CRP 13 | HDL/LDL borderline
+<br><br>
+<strong style="color:#00ff41">✅ Positives:</strong> HbA1c normal (36) | Glucose normal | BP 123 | Grip 51kg | Non-smoker
+</div>
+</div>
+<div style="margin-top:10px;font-size:11px;color:#888">
+Swedish male baseline: 81y | Obesity -4y | Low fitness -4y | Poor sleep -2y | Inflammation -1y | Genetics -1y | <strong>Current: ~69y | Optimized: ~85y</strong>
+</div>
+</div>
+</div>
+
+<!-- HARSH ROADMAP -->
+<div class="win95-border" style="margin-bottom:10px">
+<div class="titlebar" style="background:linear-gradient(90deg,#8b0000,#cc0000);font-size:15px">📋 HARSH ROADMAP</div>
+<div style="padding:14px">
+<div class="win95-inset" style="padding:10px;margin-bottom:10px;border-left:4px solid #ff4444">
+<div style="font-size:14px;font-weight:bold;color:#ff4444;margin-bottom:8px">PHASE 1: EMERGENCY (Now → May 9 Hyrox)</div>
+<div style="font-size:12px;color:#c0c0c0;line-height:1.8">
+<div>▢ Weight: 108 → 98 kg (lose 10kg)</div>
+<div>▢ Sleep consistency: 69% → 80%</div>
+<div>▢ Zone 3 training: 0 → 2 sessions/week</div>
+<div>▢ Vitamin D: start 4000 IU daily</div>
+<div>▢ Dairy audit (sleep disturbances)</div>
+<div>▢ Post-workout protein: 40g within 30min</div>
+<div>▢ WHOOP age: 44.4 → under 41</div>
+</div>
+</div>
+<div class="win95-inset" style="padding:10px;margin-bottom:10px;border-left:4px solid #ffd700">
+<div style="font-size:14px;font-weight:bold;color:#ffd700;margin-bottom:8px">PHASE 2: REBUILD (May → Dec 2026)</div>
+<div style="font-size:12px;color:#c0c0c0;line-height:1.8">
+<div>▢ Weight: 98 → 88 kg</div>
+<div>▢ Start patella tendon rehab (6 years overdue)</div>
+<div>▢ Dental work: complete all treatment</div>
+<div>▢ HDL optimization (exercise + omega-3)</div>
+<div>▢ Target: Garmin fitness age &lt; 35</div>
+</div>
+</div>
+<div class="win95-inset" style="padding:10px;border-left:4px solid #00ff41">
+<div style="font-size:14px;font-weight:bold;color:#00ff41;margin-bottom:8px">PHASE 3: LONGEVITY (2027+)</div>
+<div style="font-size:12px;color:#c0c0c0;line-height:1.8">
+<div>▢ Weight: maintain 85 kg</div>
+<div>▢ WHOOP age consistently under 35</div>
+<div>▢ Annual blood panels</div>
+<div>▢ Colonoscopy baseline at 45</div>
+<div>▢ Build to 150 min vigorous activity/week</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="grid g3">
+<div class="card win95-border">
+<h3>Body Composition</h3>
+<table>
+<tr><td>Weight</td><td class="metric" style="font-size:16px">108 kg</td></tr>
+<tr><td>BMI</td><td class="yellow" style="font-size:16px;font-weight:bold">32</td></tr>
+<tr><td>Grip Strength</td><td class="green" style="font-size:16px;font-weight:bold">51 kg</td></tr>
+</table>
+</div>
+<div class="card win95-border">
+<h3>Heart & Vitals</h3>
+<table>
+<tr><td>Blood Pressure</td><td class="green" style="font-weight:bold">123</td></tr>
+<tr><td>O₂ Saturation</td><td class="green" style="font-weight:bold">99%</td></tr>
+<tr><td>Resting Pulse</td><td class="green" style="font-weight:bold">76 bpm</td></tr>
+<tr><td>HRV</td><td class="green" style="font-weight:bold">432 ms</td></tr>
+</table>
+</div>
+<div class="card win95-border">
+<h3>Integrations</h3>
+<table>
+<tr><td>🧬 DNA Upload</td><td class="green">✅ Analyzed</td></tr>
+<tr><td>⌚ WHOOP</td><td class="green">✅ Connected</td></tr>
+</table>
+</div>
+</div>
+<!-- WHOOP DATA -->
+<div class="win95-border" style="margin:10px 4px">
+<div class="titlebar" style="background:linear-gradient(90deg,#1a5276,#2e86c1)">⌚ WHOOP — 30-Day Overview (Jan 30 – Mar 1, 2026)</div>
+<div style="padding:10px">
+<div class="grid g4">
+<div class="card win95-inset"><h3>Recovery</h3><div class="metric" style="font-size:28px;color:var(--yellow)">67.4%</div><div class="metric-label">Avg (range: 38-97%)</div></div>
+<div class="card win95-inset"><h3>HRV</h3><div class="metric" style="font-size:28px;color:var(--yellow)">40.9 ms</div><div class="metric-label">Avg heart rate variability</div></div>
+<div class="card win95-inset"><h3>RHR</h3><div class="metric" style="font-size:28px;color:var(--green)">64.5 bpm</div><div class="metric-label">Resting heart rate</div></div>
+<div class="card win95-inset"><h3>Sleep</h3><div class="metric" style="font-size:28px;color:var(--yellow)">7.1 hrs</div><div class="metric-label">75.8% performance, 69% consistency</div></div>
+</div>
+<div class="grid g3" style="margin-top:8px">
+<div class="card win95-inset"><h3>🏃 Training (30d)</h3>
+<table>
+<tr><td>Total Workouts</td><td style="color:var(--bright);font-weight:bold">15</td></tr>
+<tr><td>Running</td><td>8 sessions (~30 min)</td></tr>
+<tr><td>Functional Fitness</td><td>4 sessions (~25 min)</td></tr>
+<tr><td>Walking</td><td>2 sessions</td></tr>
+<tr><td>Swimming</td><td>1 session</td></tr>
+<tr><td>Avg Daily Strain</td><td style="color:var(--yellow)">7.3</td></tr>
+<tr><td>Peak Strain</td><td style="color:var(--accent)">18.9 (Feb 16)</td></tr>
+</table>
+</div>
+<div class="card win95-inset"><h3>⚠️ Key Issues</h3>
+<table>
+<tr><td class="red">Sleep consistency</td><td class="red">69% (low)</td></tr>
+<tr><td class="yellow">Disturbances</td><td class="yellow">8-19/night</td></tr>
+<tr><td class="yellow">Recovery swings</td><td class="yellow">38-97%</td></tr>
+<tr><td class="yellow">Running zones</td><td class="yellow">Mostly Z1-2</td></tr>
+</table>
+</div>
+<div class="card win95-inset"><h3>🧬 DNA Cross-Ref</h3>
+<table>
+<tr><td>FTO/MC4R</td><td class="yellow">Diet timing sensitive</td></tr>
+<tr><td>ACTN3 CT</td><td class="green">Hybrid (good for Hyrox)</td></tr>
+<tr><td>COMT AG</td><td class="yellow">Needs sleep routine</td></tr>
+<tr><td>Lactose</td><td class="yellow">May cause disturbances</td></tr>
+<tr><td>Vitamin D</td><td class="red">Likely low (winter)</td></tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<div class="card win95-border" style="margin:10px 4px">
+<h3>🧬 DNA Profile — 23andMe Results</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px">
+<div class="win95-inset" style="padding:8px"><div style="color:var(--green);font-weight:bold">✅ APOE</div><div>ε3/ε3 — neutral risk</div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--green);font-weight:bold">✅ MTHFR</div><div>Normal (C677T + A1298C)</div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--blue);font-weight:bold">ℹ️ COMT</div><div>Val/Met — balanced dopamine</div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--yellow);font-weight:bold">⚠️ FTO (×3)</div><div>Obesity risk alleles<br><span style="font-size:10px">rs9939609 AT · rs1558902 AT · rs1421085 CT</span></div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--yellow);font-weight:bold">⚠️ MC4R</div><div>Appetite regulation variant</div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--green);font-weight:bold">✅ ACTN3</div><div>CT — mixed power/endurance<br><span style="font-size:10px">Great for Hyrox! 🏋️</span></div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--yellow);font-weight:bold">⚠️ Lactose</div><div>GG rs4988235 — intolerant</div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--yellow);font-weight:bold">⚠️ Vitamin D</div><div>Transport variants — monitor</div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--green);font-weight:bold">✅ FADS1</div><div>Higher plant omega-3 conversion</div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--green);font-weight:bold">✅ BDNF</div><div>Normal — brain health good</div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--yellow);font-weight:bold">⚠️ DNA Repair</div><div>Slightly reduced<br><span style="font-size:10px">XRCC1 + ERCC2 hetero</span></div></div>
+<div class="win95-inset" style="padding:8px"><div style="color:var(--yellow);font-weight:bold">⚠️ PPARγ</div><div>Pro/Pro — insulin resistance tendency</div></div>
+</div>
+<div style="margin-top:8px;font-size:11px"><span class="tag tag-green">✅ Good</span> <span class="tag tag-yellow">⚠️ Watch</span> <span class="tag tag-red">🔴 Concern</span></div>
+</div>
+<div class="grid g2" style="margin-top:10px">
+<div class="card win95-border">
+<h3>Blood Panel</h3>
+<table>
+<tr><th>Marker</th><th>Value</th><th>Status</th></tr>
+<tr><td>Total Cholesterol</td><td>4.83 mmol/L</td><td class="green">●  Optimal</td></tr>
+<tr><td>HDL</td><td>1.19 mmol/L</td><td class="yellow">●  Borderline</td></tr>
+<tr><td>LDL</td><td>3.13 mmol/L</td><td class="yellow">●  Borderline</td></tr>
+<tr><td>Triglycerides</td><td>1.13 mmol/L</td><td class="green">●  Optimal</td></tr>
+<tr><td>HbA1c</td><td>36 mmol/mol</td><td class="green">●  Optimal</td></tr>
+<tr><td>Glucose</td><td>4.3 mmol/L</td><td class="green">●  Optimal</td></tr>
+<tr><td>CRP</td><td>13 mg/L</td><td class="red">●  Elevated <span style="font-size:10px">(tooth infection)</span></td></tr>
+<tr><td>Haemoglobin</td><td>149 g/L</td><td class="green">●  Optimal</td></tr>
+<tr><td>WBC</td><td>4.7 ×10⁹/L</td><td class="green">●  Optimal</td></tr>
+</table>
+</div>
+<div class="card win95-border">
+<h3>🏋️ Hyrox Countdown — May 9, 2026</h3>
+<div class="countdown" id="hyrox-countdown-doc" style="margin:10px 0"></div>
+<div class="progress-bar" style="height:24px">
+<div class="progress-fill" id="hyrox-progress" style="background:linear-gradient(90deg,var(--accent),var(--green))"></div>
+<div class="progress-text" id="hyrox-progress-text"></div>
+</div>
+<div class="metric-label" style="margin-top:8px">Training progress (from Jan 1 2026)</div>
+<div class="chart-box" style="height:160px;margin-top:10px"><canvas id="healthRadar"></canvas></div>
+</div>
+</div>
+</div>
+
+<!-- MR Q -->
+<div class="tab-content" id="mrq">
+<div class="grid g2">
+<div class="card win95-border">
+<h3>📰 Newsletter — byqqa</h3>
+<div class="metric">176 <span style="font-size:12px;color:var(--text)">subs</span></div>
+<div style="margin-top:6px">Avg Open Rate: <span style="color:var(--green);font-weight:bold">65.6%</span></div>
+<div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:65.6%;background:var(--green)"></div><div class="progress-text">65.6% avg open</div></div>
+</div>
+<div class="card win95-border">
+<h3>📰 Newsletter — The Playbook</h3>
+<div class="metric">195 <span style="font-size:12px;color:var(--text)">subs</span></div>
+<div style="margin-top:6px">Avg Open Rate: <span style="color:var(--yellow);font-weight:bold">33.2%</span></div>
+<div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:33.2%;background:var(--yellow)"></div><div class="progress-text">33.2% avg open</div></div>
+</div>
+</div>
+<div class="grid g2" style="margin-top:10px">
+<div class="card win95-border">
+<h3>Open Rates by Edition</h3>
+<div class="chart-box"><canvas id="editionChart"></canvas></div>
+</div>
+<div>
+<div class="card win95-border" style="margin-bottom:10px">
+<h3>𝕏 / Twitter — @z4khersi</h3>
+<div class="metric">3,253 <span style="font-size:12px;color:var(--text)">followers</span></div>
+</div>
+<div class="card win95-border" style="margin-bottom:10px">
+<h3>Content Pipeline</h3>
+<table>
+<tr><td>Newsletter #7</td><td><span class="tag tag-green">Draft Ready</span></td></tr>
+<tr><td>Off Plan Promo</td><td><span class="tag tag-yellow">In Progress</span></td></tr>
+</table>
+</div>
+<div class="card win95-border">
+<h3>🎤 Off Plan #1</h3>
+<div style="color:var(--bright);font-weight:bold">"Black in AI in Sweden"</div>
+<div>March 24, 2026</div>
+<div class="countdown" id="offplan-countdown-mrq" style="margin:6px 0"></div>
+<div style="margin-top:4px">Speakers: <span class="tag tag-blue">Yasaar</span> <span class="tag tag-blue">Binette</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SCOUT -->
+<div class="tab-content" id="scout">
+<div class="grid g2">
+<div class="card win95-border">
+<h3>🚀 FirstLap — Couch to Launch</h3>
+<div style="margin:8px 0"><span class="tag tag-green">PRD Complete</span> <span class="tag tag-blue">Next.js Scaffolded</span></div>
+<div style="color:var(--bright);font-size:14px;margin:8px 0">"Runna for entrepreneurs" — 10-day idea execution challenge</div>
+<table style="margin-top:8px">
+<tr><td>Product</td><td style="color:var(--bright)">Forces first-time founders to ship or kill an idea in 10 days</td></tr>
+<tr><td>Target</td><td>First-time founders stuck in idea mode</td></tr>
+<tr><td>Model</td><td>Paid cohorts, social accountability, public exposure</td></tr>
+<tr><td>Tech</td><td><span class="tag tag-blue">Next.js</span></td></tr>
+<tr><td>PRD</td><td class="green">453 lines ✅</td></tr>
+</table>
+</div>
+<div class="card win95-border">
+<h3>📊 Key Metrics Targets</h3>
+<div style="margin-top:12px">
+<div style="margin:8px 0">Day 5 Retention</div>
+<div class="progress-bar" style="height:22px"><div class="progress-fill" style="width:75%;background:var(--green)"></div><div class="progress-text">Target: >75% reach Day 5</div></div>
+<div style="margin:8px 0">Day 10 Completion</div>
+<div class="progress-bar" style="height:22px"><div class="progress-fill" style="width:60%;background:var(--yellow)"></div><div class="progress-text">Target: >60% reach Day 10</div></div>
+</div>
+<table style="margin-top:16px">
+<tr><th>Milestone</th><th>Status</th></tr>
+<tr><td>PRD</td><td class="green">✅ Complete</td></tr>
+<tr><td>Next.js App</td><td class="green">✅ Scaffolded</td></tr>
+<tr><td>Cohort #1</td><td class="yellow">⏳ Pending</td></tr>
+<tr><td>Launch</td><td class="yellow">⏳ Pending</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- DELIVERABLES -->
+<div class="tab-content" id="deliverables">
+<div style="padding:12px">
+
+<!-- MR Q SECTION -->
+<div class="win95-border" style="margin-bottom:12px">
+<div class="titlebar" style="background:linear-gradient(90deg,#000080,#1084d0);font-size:15px">🎩 Mr Q — 12 files</div>
+<div style="padding:12px">
+<div class="grid g3" id="mrq-files">
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-0')">📄 beehiiv-analysis</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-1')">📄 cost-optimization-plan</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-2')">📄 cost-optimization-qwen</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-3')">📄 linkedin-stop-funding-stereotypes</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-4')">📄 multi-agent-architecture</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-5')">📄 newsletter-7-offplan</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-6')">📄 pitch-blackai-ticket-revenue</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-7')">📄 pitch-norrsken-collab</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-8')">📄 revenue-roadmap-10k</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-9')">📄 x-tweet-queue</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-10')">📄 zak-profile</div>
+<div class="win95-inset" style="padding:8px;cursor:pointer" onclick="toggleDeliverable('mrq-11')">📁 offplan-event1/ (4 files)</div>
+</div>
+<div id="mrq-content" style="margin-top:10px"></div>
+</div>
+</div>
+
+<!-- ANALYST SECTION -->
+<div class="win95-border" style="margin-bottom:12px">
+<div class="titlebar" style="background:linear-gradient(90deg,#006400,#00aa00);font-size:15px">📊 Analyst — 1 file</div>
+<div style="padding:12px">
+<div class="win95-inset" style="padding:10px">
+<div style="font-size:13px;color:#00ff41;margin-bottom:6px">📄 Work Briefings</div>
+<div style="font-size:12px;color:#888">Briefings are generated fresh each morning. Check the Analyst tab for latest.</div>
+</div>
+</div>
+</div>
+
+<!-- SCOUT SECTION -->
+<div class="win95-border" style="margin-bottom:12px">
+<div class="titlebar" style="background:linear-gradient(90deg,#8b6914,#ffd700);font-size:15px">🔭 Scout — 4 projects</div>
+<div style="padding:12px">
+<div class="grid g2">
+<div class="win95-inset" style="padding:10px;cursor:pointer" onclick="toggleDeliverable('scout-0')">
+<div style="font-size:13px;color:#ffd700;margin-bottom:4px">📄 FirstLap PRD</div>
+<div style="font-size:11px;color:#888">projects/firstlap/PRD-v2.md</div>
+</div>
+<div class="win95-inset" style="padding:10px">
+<div style="font-size:13px;color:#ffd700;margin-bottom:4px">🌐 API Pulse</div>
+<div style="font-size:11px;color:#00ff41"><a href="https://api-pulse-five.vercel.app" target="_blank" style="color:#00ff41">api-pulse-five.vercel.app</a></div>
+<div style="font-size:11px;color:#888">Live</div>
+</div>
+<div class="win95-inset" style="padding:10px">
+<div style="font-size:13px;color:#ffd700;margin-bottom:4px">📄 TopUpScout Landing</div>
+<div style="font-size:11px;color:#888">Ready to deploy</div>
+</div>
+<div class="win95-inset" style="padding:10px;cursor:pointer" onclick="toggleDeliverable('scout-1')">
+<div style="font-size:13px;color:#ffd700;margin-bottom:4px">📁 Overnight Scan</div>
+<div style="font-size:11px;color:#888">projects/overnight-scan/</div>
+<div style="font-size:11px;color:#888">trend-report-2026-02-27</div>
+</div>
+</div>
+<div id="scout-content" style="margin-top:10px"></div>
+</div>
+</div>
+
+<!-- DOC SECTION -->
+<div class="win95-border" style="margin-bottom:12px">
+<div class="titlebar" style="background:linear-gradient(90deg,#1a5276,#2e86c1);font-size:15px">🧬 Doc — Data & Analysis</div>
+<div style="padding:12px">
+<div class="grid g2">
+<div class="win95-inset" style="padding:10px">
+<div style="font-size:13px;color:#00d4ff;margin-bottom:4px">🧬 DNA Analysis</div>
+<div style="font-size:11px;color:#888">data/dna/</div>
+</div>
+<div class="win95-inset" style="padding:10px">
+<div style="font-size:13px;color:#00d4ff;margin-bottom:4px">⌚ WHOOP 30-day</div>
+<div style="font-size:11px;color:#888">data/whoop/</div>
+</div>
+<div class="win95-inset" style="padding:10px">
+<div style="font-size:13px;color:#00d4ff;margin-bottom:4px">🏋️ Fitness Age</div>
+<div style="font-size:11px;color:#888">data/fitness-age/</div>
+</div>
+<div class="win95-inset" style="padding:10px">
+<div style="font-size:13px;color:#00d4ff;margin-bottom:4px">🩸 Blood Work</div>
+<div style="font-size:11px;color:#888">data/bloodwork/</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<footer>Last refreshed: <span id="timestamp"></span> | Mr Q Command Center v2.0 | 🎩</footer>
+</div>
+
+<script>
+function switchTab(id){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tab')[['overview','analyst','doc','mrq','scout','deliverables'].indexOf(id)].classList.add('active')}
+
+function countdown(target,elId){const el=document.getElementById(elId);if(!el)return;const d=new Date(target)-new Date();if(d<0){el.textContent='EVENT PASSED';return}const days=Math.floor(d/864e5),hrs=Math.floor(d%864e5/36e5);el.textContent=days+'d '+hrs+'h remaining'}
+
+function updateCountdowns(){countdown('2026-05-09','hyrox-countdown-overview');countdown('2026-03-24','offplan-countdown-overview');countdown('2026-05-09','hyrox-countdown-doc');countdown('2026-03-24','offplan-countdown-mrq');
+const start=new Date('2026-01-01'),end=new Date('2026-05-09'),now=new Date();const pct=Math.min(100,Math.max(0,((now-start)/(end-start))*100));const el=document.getElementById('hyrox-progress');const et=document.getElementById('hyrox-progress-text');if(el){el.style.width=pct.toFixed(1)+'%';et.textContent=pct.toFixed(1)+'% of training period elapsed'}}
+
+document.getElementById('timestamp').textContent=new Date().toLocaleString('en-GB',{timeZone:'Europe/Stockholm'});
+updateCountdowns();setInterval(updateCountdowns,60000);
+
+// Year chart
+new Chart(document.getElementById('yearChart'),{type:'bar',data:{labels:['2023','2024','2025','2026'],datasets:[{label:'Applications',data:[105,134,84,14],backgroundColor:['#e94560','#00d4ff','#ffd700','#00ff41']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#c0c0c0'},grid:{color:'#404040'}},x:{ticks:{color:'#c0c0c0'},grid:{display:false}}}}});
+
+// Entity chart
+new Chart(document.getElementById('entityChart'),{type:'doughnut',data:{labels:['For-profit','Not-for-profit'],datasets:[{data:[242,88],backgroundColor:['#00d4ff','#e94560']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#c0c0c0'}}}}});
+
+// Edition open rates
+new Chart(document.getElementById('editionChart'),{type:'bar',data:{labels:['#1','#2','#3','#4','#5','#6','#7','#8','#9','#10'],datasets:[{label:'byqqa Open %',data:[72,68,65,70,63,60,66,62,64,66],backgroundColor:'#00ff41'},{label:'Playbook Open %',data:[40,38,35,33,32,30,34,31,29,30],backgroundColor:'#ffd700'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#c0c0c0'}}},scales:{y:{ticks:{color:'#c0c0c0',callback:v=>v+'%'},grid:{color:'#404040'}},x:{ticks:{color:'#c0c0c0'},grid:{display:false}}}}});
+
+// Health radar
+new Chart(document.getElementById('healthRadar'),{type:'radar',data:{labels:['BP','O₂','Pulse','HRV','Grip','Glucose'],datasets:[{label:'Current',data:[85,99,80,90,75,95],borderColor:'#00ff41',backgroundColor:'rgba(0,255,65,0.1)',pointBackgroundColor:'#00ff41'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'#404040'},pointLabels:{color:'#c0c0c0',font:{size:10}}}}}});
+</script>
+</body>
+</html>
