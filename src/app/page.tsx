@@ -4,71 +4,92 @@ import { useState } from "react";
 import TaskBoard from "@/components/TaskBoard";
 import Calendar from "@/components/Calendar";
 import Projects from "@/components/Projects";
-import Team from "@/components/Team";
-import Office from "@/components/Office";
+import Docs from "@/components/Docs";
+import Memory from "@/components/Memory";
+import Dashboard from "@/components/Dashboard";
 
 const navItems = [
+  { id: "dashboard", label: "Dashboard", icon: "📊" },
   { id: "tasks", label: "Tasks", icon: "📋" },
   { id: "calendar", label: "Calendar", icon: "📅" },
   { id: "projects", label: "Projects", icon: "📁" },
-  { id: "team", label: "Team", icon: "👥" },
-  { id: "office", label: "Office", icon: "🏢" },
+  { id: "docs", label: "Docs", icon: "📄" },
+  { id: "memory", label: "Memory", icon: "🧠" },
 ];
 
-export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("tasks");
+export default function MissionControl() {
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   const renderContent = () => {
     switch (activeTab) {
+      case "dashboard":
+        return <Dashboard />;
       case "tasks":
         return <TaskBoard />;
       case "calendar":
         return <Calendar />;
       case "projects":
         return <Projects />;
-      case "team":
-        return <Team />;
-      case "office":
-        return <Office />;
+      case "docs":
+        return <Docs />;
+      case "memory":
+        return <Memory />;
       default:
-        return <TaskBoard />;
+        return <Dashboard />;
     }
   };
 
   return (
-    <div className="flex h-screen bg-[#0a0a0b]">
+    <div className="flex h-screen bg-[#0d0d0f]">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#121214] border-r border-[#27272a] flex flex-col">
-        <div className="p-4 border-b border-[#27272a]">
-          <h1 className="text-lg font-bold flex items-center gap-2">
-            <span className="text-xl">🎯</span>
-            Mission Control
-          </h1>
+      <aside className="w-64 bg-[#151519] border-r border-[#27272f] flex flex-col">
+        {/* Logo */}
+        <div className="p-5 border-b border-[#27272f]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5e6ad2] to-[#7c3aed] flex items-center justify-center">
+              <span className="text-white font-bold text-sm">⚡</span>
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold">Mission Control</h1>
+              <p className="text-xs text-[#6b6b75]">Agent Command Center</p>
+            </div>
+          </div>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2">
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1">
           {navItems.map((item) => (
             <div
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`nav-item ${activeTab === item.id ? "active" : ""}`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all ${
+                activeTab === item.id
+                  ? "bg-[#1f1f26] text-white"
+                  : "text-[#a1a1aa] hover:bg-[#1a1a20] hover:text-white"
+              }`}
             >
-              <span className="text-xl">{item.icon}</span>
+              <span className="text-base">{item.icon}</span>
               <span className="font-medium">{item.label}</span>
             </div>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-[#27272a]">
-          <div className="text-xs text-[#71717a]">
-            <p>🎩 Mr Q</p>
-            <p className="mt-1">Chief of Staff</p>
+        {/* User */}
+        <div className="p-4 border-t border-[#27272f]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5e6ad2] to-[#7c3aed] flex items-center justify-center text-xs font-bold">
+              Z
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Zak</p>
+              <p className="text-xs text-[#6b6b75]">Chief Builder</p>
+            </div>
           </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto gradient-bg">
         {renderContent()}
       </main>
     </div>

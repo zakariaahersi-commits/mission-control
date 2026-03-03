@@ -20,45 +20,51 @@ const initialTasks: Task[] = [
 ];
 
 const columns = [
-  { id: "backlog", label: "Backlog", color: "#71717a" },
-  { id: "inprogress", label: "In Progress", color: "#3b82f6" },
-  { id: "review", label: "Review", color: "#f59e0b" },
-  { id: "done", label: "Done", color: "#22c55e" },
+  { id: "backlog", label: "Backlog" },
+  { id: "inprogress", label: "In Progress" },
+  { id: "review", label: "Review" },
+  { id: "done", label: "Done" },
 ];
 
 export default function TaskBoard() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityBadge = (priority: string) => {
     switch (priority) {
-      case "high": return "bg-[#ef4444]";
-      case "medium": return "bg-[#f59e0b]";
-      case "low": return "bg-[#22c55e]";
-      default: return "bg-[#71717a]";
+      case "high": return <span className="badge badge-high">High</span>;
+      case "medium": return <span className="badge badge-medium">Med</span>;
+      case "low": return <span className="badge badge-low">Low</span>;
+      default: return null;
     }
   };
 
-  const getAssigneeBadge = (assignee: string) => {
+  const getAssigneeAvatar = (assignee: string) => {
     const initials = assignee.charAt(0);
     return (
-      <span className="w-5 h-5 rounded-full bg-[#7c3aed] text-xs flex items-center justify-center font-bold">
+      <div className="avatar">
         {initials}
-      </span>
+      </div>
     );
   };
 
   return (
     <div className="h-full flex">
       {/* Kanban Board */}
-      <div className="flex-1 p-6 overflow-auto">
-        <div className="flex gap-4 h-full">
+      <div className="flex-1 p-8 overflow-auto">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-2">
+            <span className="gradient-text">📋 Tasks</span>
+          </h2>
+          <p className="text-[#6b6b75] text-sm">Track what each agent is working on</p>
+        </div>
+
+        <div className="flex gap-6 h-full">
           {columns.map((col) => (
-            <div key={col.id} className="kanban-column bg-[#121214] rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
-                <h3 className="font-semibold">{col.label}</h3>
-                <span className="text-xs text-[#71717a] ml-auto">
+            <div key={col.id} className="flex-1 min-w-[280px]">
+              <div className="column-header">
+                <span>{col.label}</span>
+                <span className="text-[#6b6b75] font-normal">
                   {tasks.filter(t => t.status === col.id).length}
                 </span>
               </div>
@@ -68,15 +74,15 @@ export default function TaskBoard() {
                   <div
                     key={task.id}
                     onClick={() => setSelectedTask(task)}
-                    className={`task-card p-3 cursor-pointer ${selectedTask?.id === task.id ? "border-[#7c3aed]" : ""}`}
+                    className={`task-card ${selectedTask?.id === task.id ? "border-[#5e6ad2]" : ""}`}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <span className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`} />
-                      {getAssigneeBadge(task.assignee)}
+                    <div className="flex items-start justify-between mb-3">
+                      {getPriorityBadge(task.priority)}
+                      {getAssigneeAvatar(task.assignee)}
                     </div>
-                    <p className="text-sm font-medium">{task.title}</p>
-                    <div className="mt-2 text-xs text-[#71717a]">
-                      {task.assignee}
+                    <p className="text-sm font-medium mb-3">{task.title}</p>
+                    <div className="flex items-center gap-2 text-xs text-[#6b6b75]">
+                      <span>{task.assignee}</span>
                     </div>
                   </div>
                 ))}
@@ -87,44 +93,44 @@ export default function TaskBoard() {
       </div>
 
       {/* Activity Feed */}
-      <div className="w-80 bg-[#121214] border-l border-[#27272a] p-4 overflow-auto">
-        <h3 className="font-semibold mb-4 flex items-center gap-2">
+      <div className="w-80 bg-[#151519] border-l border-[#27272f] p-6 overflow-auto">
+        <h3 className="text-sm font-semibold text-[#a1a1aa] mb-4 flex items-center gap-2">
           <span>⚡</span> Live Activity
         </h3>
         <div className="space-y-0">
           <div className="activity-item">
-            <p className="text-[#a1a1aa]">
-              <span className="text-[#7c3aed] font-medium">Mr Q</span> deployed Mission Control
+            <p className="text-sm">
+              <span className="text-[#5e6ad2] font-medium">Mr Q</span> deployed Mission Control
             </p>
-            <p className="text-xs text-[#71717a] mt-1">2 min ago</p>
+            <p className="text-xs text-[#6b6b75] mt-1">2 min ago</p>
           </div>
           <div className="activity-item">
-            <p className="text-[#a1a1aa]">
-              <span className="text-[#7c3aed] font-medium">Analyst</span> synced 23 Affinity contacts
+            <p className="text-sm">
+              <span className="text-[#5e6ad2] font-medium">Analyst</span> synced 47 Affinity contacts
             </p>
-            <p className="text-xs text-[#71717a] mt-1">15 min ago</p>
+            <p className="text-xs text-[#6b6b75] mt-1">18 min ago</p>
           </div>
           <div className="activity-item">
-            <p className="text-[#a1a1aa]">
-              <span className="text-[#7c3aed] font-medium">Scout</span> found 5 trending AI topics
+            <p className="text-sm">
+              <span className="text-[#5e6ad2] font-medium">Scout</span> found 5 trending AI topics
             </p>
-            <p className="text-xs text-[#71717a] mt-1">1 hour ago</p>
+            <p className="text-xs text-[#6b6b75] mt-1">1 hour ago</p>
           </div>
           <div className="activity-item">
-            <p className="text-[#a1a1aa]">
-              <span className="text-[#7c3aed] font-medium">Doc</span> updated WHOOP recovery score
+            <p className="text-sm">
+              <span className="text-[#5e6ad2] font-medium">Doc</span> updated WHOOP recovery score
             </p>
-            <p className="text-xs text-[#71717a] mt-1">2 hours ago</p>
+            <p className="text-xs text-[#6b6b75] mt-1">3 hours ago</p>
           </div>
           <div className="activity-item">
-            <p className="text-[#a1a1aa]">
-              <span className="text-[#7c3aed] font-medium">Mr Q</span> completed OAuth for Google Drive
+            <p className="text-sm">
+              <span className="text-[#5e6ad2] font-medium">Mr Q</span> completed OAuth for Google Drive
             </p>
-            <p className="text-xs text-[#71717a] mt-1">3 hours ago</p>
+            <p className="text-xs text-[#6b6b75] mt-1">5 hours ago</p>
           </div>
         </div>
 
-        <button className="w-full mt-6 py-2 bg-[#7c3aed] hover:bg-[#8b5cf6] text-white rounded-lg text-sm font-medium transition-colors">
+        <button className="btn-primary w-full mt-6">
           + New Task
         </button>
       </div>
