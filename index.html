@@ -30,7 +30,6 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
   position: fixed;
   left: 0;
@@ -126,10 +125,8 @@ body {
   font-weight: 600;
 }
 
-/* Main content */
 .main {
   margin-left: 220px;
-  padding: 0;
 }
 
 .view {
@@ -140,7 +137,13 @@ body {
   display: block;
 }
 
-/* Stats bar */
+.view iframe {
+  width: 100%;
+  height: 100vh;
+  border: none;
+}
+
+/* Kanban styles */
 .stats-bar {
   display: flex;
   gap: 24px;
@@ -168,7 +171,6 @@ body {
   color: var(--text-muted);
 }
 
-/* Toolbar */
 .toolbar {
   display: flex;
   align-items: center;
@@ -188,9 +190,7 @@ body {
   cursor: pointer;
 }
 
-.btn:hover {
-  opacity: 0.9;
-}
+.btn:hover { opacity: 0.9; }
 
 .filter {
   background: var(--surface);
@@ -201,7 +201,6 @@ body {
   color: var(--text-secondary);
 }
 
-/* Kanban board */
 .board {
   display: flex;
   gap: 16px;
@@ -335,12 +334,16 @@ body {
   color: var(--text-muted);
 }
 
-/* Activity sidebar */
 .activity-sidebar {
   width: 280px;
   border-left: 1px solid var(--border);
   padding: 16px;
   overflow: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--bg);
 }
 
 .activity-title {
@@ -379,43 +382,6 @@ body {
   margin-top: 2px;
 }
 
-/* Calendar view */
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background: var(--border);
-  margin: 24px;
-  border: 1px solid var(--border);
-}
-
-.calendar-day {
-  background: var(--bg);
-  min-height: 120px;
-  padding: 8px;
-}
-
-.calendar-day-header {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.calendar-day-number {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.calendar-event {
-  background: var(--accent);
-  padding: 4px 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  margin-bottom: 2px;
-}
-
-/* Docs view */
 .docs-list {
   padding: 24px;
 }
@@ -461,9 +427,8 @@ body {
   color: var(--text-muted);
 }
 
-/* Memory view */
 .memory-timeline {
-  padding: 24px;
+  padding: 24px 24px 24px 80px;
 }
 
 .memory-date {
@@ -471,13 +436,28 @@ body {
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
+  position: relative;
 }
 
-.memory-date-dot {
+.memory-date::before {
+  content: '';
+  position: absolute;
+  left: -80px;
+  top: 8px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--accent);
+}
+
+.memory-date::after {
+  content: '';
+  position: absolute;
+  left: -77px;
+  top: 24px;
+  bottom: -20px;
+  width: 2px;
+  background: var(--border);
 }
 
 .memory-date-text {
@@ -491,7 +471,6 @@ body {
   border-radius: 6px;
   padding: 12px;
   margin-bottom: 8px;
-  margin-left: 16px;
 }
 
 .memory-type {
@@ -524,7 +503,11 @@ body {
     <input type="text" placeholder="Search tasks, docs, memory...">
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-item active" onclick="switchView('tasks')">
+    <div class="nav-item active" onclick="switchView('dashboard')">
+      <span class="nav-icon">📊</span>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="switchView('tasks')">
       <span class="nav-icon">▦</span>
       <span>Tasks</span>
     </div>
@@ -548,10 +531,6 @@ body {
       <span class="nav-icon">👥</span>
       <span>Agents</span>
     </div>
-    <div class="nav-item" onclick="switchView('dashboard')">
-      <span class="nav-icon">📊</span>
-      <span>Dashboard</span>
-    </div>
   </nav>
   <div class="sidebar-user">
     <div class="user-avatar">Z</div>
@@ -562,8 +541,13 @@ body {
 <!-- Main Content -->
 <div class="main">
   
+  <!-- DASHBOARD VIEW (Original Win95) -->
+  <div class="view active" id="dashboard-view">
+    <iframe src="dashboard.html"></iframe>
+  </div>
+
   <!-- TASKS VIEW -->
-  <div class="view active" id="tasks-view">
+  <div class="view" id="tasks-view">
     <div class="stats-bar">
       <div class="stat">
         <span class="stat-value green">19</span>
@@ -590,8 +574,7 @@ body {
         </select>
       </div>
     </div>
-    <div class="board">
-      <!-- Recurring -->
+    <div class="board" style="border-right: 1px solid var(--border);">
       <div class="column">
         <div class="column-header">
           <div class="status-dot purple"></div>
@@ -600,7 +583,6 @@ body {
         </div>
         <div class="tasks"></div>
       </div>
-      <!-- Backlog -->
       <div class="column">
         <div class="column-header">
           <div class="status-dot" style="background: var(--text-muted);"></div>
@@ -641,9 +623,17 @@ body {
               <span class="task-time">5 min ago</span>
             </div>
           </div>
+          <div class="task-card">
+            <div class="task-header">
+              <div class="priority-dot low"></div>
+              <span class="task-title">Build activity feed</span>
+            </div>
+            <div class="task-footer">
+              <span class="task-time">10 min ago</span>
+            </div>
+          </div>
         </div>
       </div>
-      <!-- In Progress -->
       <div class="column">
         <div class="column-header">
           <div class="status-dot blue"></div>
@@ -673,9 +663,19 @@ body {
               <span class="task-time">1 min ago</span>
             </div>
           </div>
+          <div class="task-card">
+            <div class="task-header">
+              <div class="priority-dot medium"></div>
+              <span class="task-title">Build AI Employee Sc...</span>
+            </div>
+            <div class="task-desc">New tab in Mission Control tracking ROI of AI employee setup...</div>
+            <div class="task-footer">
+              <div class="task-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">H</div>
+              <span class="task-time">1 min ago</span>
+            </div>
+          </div>
         </div>
       </div>
-      <!-- Review -->
       <div class="column">
         <div class="column-header">
           <div class="status-dot orange"></div>
@@ -684,16 +684,13 @@ body {
         </div>
         <div class="tasks"></div>
       </div>
-      <!-- Done -->
       <div class="column">
         <div class="column-header">
           <div class="status-dot green"></div>
           <span class="column-title">Done</span>
           <span class="column-count">19</span>
         </div>
-        <div class="tasks">
-          <!-- Done tasks would go here -->
-        </div>
+        <div class="tasks"></div>
       </div>
     </div>
     <div class="activity-sidebar">
@@ -712,13 +709,21 @@ body {
         <div class="activity-agent henry">Henry</div>
         <div class="activity-text">Completed: System Status D...</div>
       </div>
+      <div class="activity-item">
+        <div class="activity-agent scout">Scout</div>
+        <div class="activity-text">Morning research: Claude Co...</div>
+        <div class="activity-time">Teams, YC vs Accenture viral</div>
+      </div>
     </div>
   </div>
 
   <!-- CALENDAR VIEW -->
   <div class="view" id="calendar-view">
-    <div class="calendar-grid">
-      <!-- Days will be populated by JS -->
+    <div style="padding: 24px;">
+      <h2 style="margin-bottom: 16px;">📅 Calendar</h2>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 24px; text-align: center; color: var(--text-muted);">
+        Calendar view coming soon — will integrate with Google Calendar
+      </div>
     </div>
   </div>
 
@@ -731,6 +736,7 @@ body {
         <option>Newsletter</option>
         <option>Briefing</option>
         <option>Research</option>
+        <option>PRD</option>
       </select>
     </div>
     <div class="docs-list">
@@ -748,6 +754,13 @@ body {
         </div>
         <div class="doc-preview">Good morning Zak. Here's what's happening today: Portfolio Sync at 14:00, 3 new inbound leads...</div>
       </div>
+      <div class="doc-item">
+        <div class="doc-header">
+          <span class="doc-type research">Research</span>
+          <span class="doc-title">AI Due Diligence Copilot — Market Research</span>
+        </div>
+        <div class="doc-preview">Market size: $2.3B TAM. Top competitors: Visible.vc, Affinity, Preqin. Key pain point: 73% of VCs...</div>
+      </div>
     </div>
   </div>
 
@@ -759,7 +772,6 @@ body {
     </div>
     <div class="memory-timeline">
       <div class="memory-date">
-        <div class="memory-date-dot"></div>
         <span class="memory-date-text">March 3, 2026</span>
       </div>
       <div class="memory-card">
@@ -767,8 +779,16 @@ body {
         <div class="memory-content">Switched all agents to Qwen 3.5 Plus via OpenRouter. No more Claude dependency. OpenRouter credits (~$500+) now primary funding source.</div>
       </div>
       <div class="memory-card">
+        <span class="memory-type decision">Decision</span>
+        <div class="memory-content">Fixed work inbox cron jobs — added GOG_KEYRING_PASSWORD=gogpass env var to all work-inbox-* jobs. OAuth was configured but env wasn't passed to cron sessions.</div>
+      </div>
+      <div class="memory-card">
         <span class="memory-type learning">Learning</span>
-        <div class="memory-content">Mission Control dashboard deployed to Vercel. Linear-inspired design with real-time agent metrics, MRR tracking, and activity feed.</div>
+        <div class="memory-content">Mission Control: Keep original Win95 dashboard as main view, add Kanban/Calendar/Docs/Memory as separate tabs. Don't replace working systems.</div>
+      </div>
+      <div class="memory-card">
+        <span class="memory-type learning">Learning</span>
+        <div class="memory-content">OAuth re-auth completed for work Google account. All 7 services now live: Gmail, Calendar, Drive, Docs, Sheets, Contacts, Tasks. AnalystQ unblocked.</div>
       </div>
     </div>
   </div>
@@ -778,18 +798,19 @@ body {
     <div class="toolbar">
       <button class="btn">+ New project</button>
     </div>
-    <div class="board" style="height: auto;">
-      <div class="column" style="margin: 24px; min-width: 350px;">
-        <div class="column-header">
-          <span class="column-title">byqqa Empire Building</span>
-        </div>
-        <div style="padding: 16px;">
-          <div style="font-size: 28px; font-weight: 600; margin-bottom: 8px;">67%</div>
-          <div style="height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 12px;">
-            <div style="height: 100%; width: 67%; background: var(--accent); border-radius: 2px;"></div>
-          </div>
-          <div style="font-size: 11px; color: var(--text-muted);">16/24 tasks complete</div>
-        </div>
+    <div style="padding: 24px;">
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 24px; text-align: center; color: var(--text-muted);">
+        Projects view coming soon — will track major initiatives with progress bars
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENTS VIEW -->
+  <div class="view" id="agents-view">
+    <div style="padding: 24px;">
+      <h2 style="margin-bottom: 16px;">👥 Agents</h2>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 24px; text-align: center; color: var(--text-muted);">
+        Agents view coming soon — will show sub-agent status and activity
       </div>
     </div>
   </div>
@@ -802,38 +823,29 @@ function switchView(view) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById(view + '-view').classList.add('active');
   event.currentTarget.classList.add('active');
+
+  // Sync URL
+  const url = new URL(window.location);
+  url.searchParams.set('view', view);
+  window.history.pushState({}, '', url);
 }
 
-// Populate calendar
-function initCalendar() {
-  const grid = document.querySelector('.calendar-grid');
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const today = new Date();
-  
-  // Header row
-  days.forEach(day => {
-    const header = document.createElement('div');
-    header.className = 'calendar-day-header';
-    header.style.background = 'var(--surface)';
-    header.style.padding = '8px';
-    header.style.fontWeight = '600';
-    header.style.fontSize = '11px';
-    header.textContent = day;
-    grid.appendChild(header);
+// Handle initial view from URL
+const params = new URLSearchParams(window.location.search);
+const initialView = params.get('view') || 'dashboard';
+document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+document.getElementById(initialView + '-view').classList.add('active');
+
+// Mark active nav item
+setTimeout(() => {
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    if(item.getAttribute('onclick').includes(initialView)) {
+      item.classList.add('active');
+    }
   });
-  
-  // Simple 4 weeks
-  for (let i = 0; i < 28; i++) {
-    const day = document.createElement('div');
-    day.className = 'calendar-day';
-    day.innerHTML = `
-      <div class="calendar-day-number">${i + 1}</div>
-    `;
-    grid.appendChild(day);
-  }
-}
-
-initCalendar();
+}, 100);
 </script>
 
 </body>
