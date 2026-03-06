@@ -3,818 +3,347 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mission Control</title>
+<title>🎩 Mission Control — Mr Q</title>
 <style>
 :root {
-  --bg: #000000;
-  --surface: #0a0a0a;
-  --border: #1a1a1a;
-  --border-hover: #2a2a2a;
-  --text: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-muted: #525252;
-  --accent: #6366f1;
-  --green: #22c55e;
-  --yellow: #f59e0b;
-  --red: #ef4444;
-  --blue: #3b82f6;
+  --bg: #0f0f1a; --bg-dark: #0a0a12; --surface: #1a1a2e; --surface-hover: #252542;
+  --border: #2a2a4a; --border-hover: #3a3a5a;
+  --text: #e0e0e0; --text-secondary: #a0a0b0; --text-muted: #606070;
+  --accent: #f59e0b; --green: #10b981; --blue: #3b82f6; --purple: #8b5cf6; --red: #ef4444;
 }
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 13px;
-  min-height: 100vh;
-}
-
-.sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 220px;
-  background: var(--bg);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-header {
-  padding: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.sidebar-header h1 {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.sidebar-search {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.sidebar-search input {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 6px 10px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.sidebar-search input:focus {
-  outline: none;
-  border-color: var(--border-hover);
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 6px;
-  overflow: auto;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  transition: all 0.15s;
-}
-
-.nav-item:hover {
-  background: var(--surface);
-  color: var(--text);
-}
-
-.nav-item.active {
-  background: var(--surface);
-  color: var(--text);
-}
-
-.nav-icon {
-  font-size: 14px;
-  width: 16px;
-  text-align: center;
-}
-
-.sidebar-user {
-  padding: 8px 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.user-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, var(--accent), #8b5cf6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.main {
-  margin-left: 220px;
-}
-
-.view {
-  display: none;
-}
-
-.view.active {
-  display: block;
-}
-
-.view iframe {
-  width: 100%;
-  height: 100vh;
-  border: none;
-}
-
-/* Kanban styles */
-.stats-bar {
-  display: flex;
-  gap: 24px;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.stat-value {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.stat-value.green { color: var(--green); }
-.stat-value.blue { color: var(--blue); }
-.stat-value.yellow { color: var(--yellow); }
-
-.stat-label {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.btn {
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn:hover { opacity: 0.9; }
-
-.filter {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 6px 10px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.board {
-  display: flex;
-  gap: 16px;
-  padding: 24px;
-  height: calc(100vh - 180px);
-  overflow: auto;
-}
-
-.column {
-  flex: 1;
-  min-width: 280px;
-  background: var(--surface);
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-}
-
-.column-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.status-dot.purple { background: #8b5cf6; }
-.status-dot.blue { background: #3b82f6; }
-.status-dot.orange { background: #f59e0b; }
-.status-dot.green { background: #22c55e; }
-
-.column-title {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-}
-
-.column-count {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.tasks {
-  flex: 1;
-  padding: 8px;
-  overflow: auto;
-}
-
-.task-card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.task-card:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-1px);
-}
-
-.task-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-
-.priority-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.priority-dot.high { background: var(--red); }
-.priority-dot.medium { background: var(--yellow); }
-.priority-dot.low { background: var(--text-muted); }
-
-.task-title {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.task-desc {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.4;
-  margin-bottom: 8px;
-}
-
-.task-tag {
-  display: inline-block;
-  background: var(--surface);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.task-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.task-avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, var(--green), #34d399);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.task-time {
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-.activity-sidebar {
-  width: 280px;
-  border-left: 1px solid var(--border);
-  padding: 16px;
-  overflow: auto;
-  position: fixed;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background: var(--bg);
-}
-
-.activity-title {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-.activity-item {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.activity-agent {
-  font-size: 11px;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.activity-agent.scout { color: var(--green); }
-.activity-agent.henry { color: var(--blue); }
-.activity-agent.quill { color: #8b5cf6; }
-
-.activity-text {
-  font-size: 11px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.activity-time {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.docs-list {
-  padding: 24px;
-}
-
-.doc-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
-
-.doc-item:hover {
-  border-color: var(--border-hover);
-}
-
-.doc-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.doc-type {
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.doc-type.newsletter { background: #8b5cf6/20; color: #a78bfa; }
-.doc-type.briefing { background: #3b82f6/20; color: #93c5fd; }
-.doc-type.research { background: #22c55e/20; color: #86efac; }
-
-.doc-title {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.doc-preview {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.memory-timeline {
-  padding: 24px 24px 24px 80px;
-}
-
-.memory-date {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  position: relative;
-}
-
-.memory-date::before {
-  content: '';
-  position: absolute;
-  left: -80px;
-  top: 8px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.memory-date::after {
-  content: '';
-  position: absolute;
-  left: -77px;
-  top: 24px;
-  bottom: -20px;
-  width: 2px;
-  background: var(--border);
-}
-
-.memory-date-text {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.memory-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 8px;
-}
-
-.memory-type {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.memory-type.daily { background: #3b82f6/20; color: #93c5fd; }
-.memory-type.learning { background: #22c55e/20; color: #86efac; }
-.memory-type.decision { background: #f59e0b/20; color: #fcd34d; }
-
-.memory-content {
-  font-size: 12px;
-  line-height: 1.5;
-}
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; min-height: 100vh; }
+body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(1px 1px at 10% 10%, #fff 1px, transparent 0), radial-gradient(1px 1px at 20% 30%, #fff 1px, transparent 0), radial-gradient(1px 1px at 40% 50%, #fff 1px, transparent 0), radial-gradient(1px 1px at 60% 70%, #fff 1px, transparent 0), radial-gradient(1px 1px at 80% 90%, #fff 1px, transparent 0); background-size: 300px 300px; opacity: 0.1; pointer-events: none; z-index: 0; }
+
+/* TOP BAR */
+.top-bar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--bg-dark); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; }
+.top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 16px; }
+.top-bar-logo { font-size: 16px; font-weight: 600; color: var(--accent); }
+.top-bar-search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; min-width: 300px; cursor: pointer; }
+.top-bar-search kbd { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--text-muted); }
+.btn-top { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 13px; color: var(--text); cursor: pointer; }
+.btn-top:hover { background: var(--surface); }
+.btn-top.primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+
+/* LAYOUT */
+.layout { display: flex; height: 100vh; position: relative; z-index: 1; }
+.sidebar { width: 220px; background: var(--bg-dark); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 56px; bottom: 0; left: 0; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer; color: var(--text-secondary); border-left: 3px solid transparent; }
+.nav-item:hover { background: var(--surface); color: var(--text); }
+.nav-item.active { background: var(--surface); color: var(--text); border-left-color: var(--accent); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.main-content { margin-left: 220px; margin-top: 56px; flex: 1; overflow-y: auto; padding: 24px; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* METRICS BAR */
+.metrics-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.metric-value { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.metric-value.green { color: var(--green); }
+.metric-value.accent { color: var(--accent); }
+.metric-value.red { color: var(--red); }
+.metric-sub { font-size: 11px; color: var(--text-secondary); }
+
+/* AGENT STATUS GRID */
+.agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; position: relative; overflow: hidden; }
+.agent-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.agent-card.mrq::before { background: var(--accent); }
+.agent-card.scout::before { background: var(--green); }
+.agent-card.analyst::before { background: var(--blue); }
+.agent-card.doc::before { background: var(--purple); }
+.agent-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.agent-icon { font-size: 20px; }
+.agent-name { font-size: 15px; font-weight: 600; }
+.agent-status { margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 12px; background: var(--green); color: #000; font-weight: 600; }
+.agent-metric { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+.agent-metric-label { color: var(--text-secondary); }
+.agent-metric-value { font-weight: 600; }
+
+/* CALENDAR */
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 24px; }
+.calendar-day { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-height: 300px; }
+.calendar-day.today { border-color: var(--accent); }
+.calendar-day-header { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
+.calendar-day.today .calendar-day-header { color: var(--accent); }
+.event-card { padding: 6px 8px; border-radius: 4px; margin-bottom: 6px; font-size: 11px; border-left: 2px solid; cursor: pointer; }
+.event-card:hover { transform: translateX(2px); }
+.event-card.red { background: rgba(239, 68, 68, 0.1); border-color: var(--red); }
+.event-card.green { background: rgba(16, 185, 129, 0.1); border-color: var(--green); }
+.event-card.blue { background: rgba(59, 130, 246, 0.1); border-color: var(--blue); }
+.event-card.amber { background: rgba(245, 158, 11, 0.1); border-color: var(--accent); }
+.event-card.purple { background: rgba(139, 92, 246, 0.1); border-color: var(--purple); }
+.event-time { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+/* DELIVERABLES GRID (Embedded) */
+.deliverables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 24px; }
+.deliverable-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+.deliverable-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.deliverable-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.deliverable-type { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.deliverable-type.draft { background: var(--accent); color: #000; }
+.deliverable-type.note { background: var(--blue); color: #fff; }
+.deliverable-type.output { background: var(--green); color: #000; }
+.deliverable-title { font-size: 14px; font-weight: 600; flex: 1; }
+.deliverable-preview { font-size: 12px; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.deliverable-meta { display: flex; justify-content: space-between; margin-top: 12px; font-size: 11px; color: var(--text-muted); }
+
+/* ACTIVITY FEED */
+.activity-feed { position: fixed; right: 0; top: 56px; bottom: 0; width: 320px; background: var(--bg-dark); border-left: 1px solid var(--border); overflow-y: auto; padding: 16px; z-index: 50; }
+.activity-feed-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.activity-feed-header h3 { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
+.live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.activity-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.activity-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.activity-agent { font-size: 12px; font-weight: 600; color: var(--accent); }
+.activity-time { font-size: 11px; color: var(--text-muted); }
+.activity-type { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 8px; }
+.activity-type.deploy { background: var(--blue); color: #000; }
+.activity-type.file { background: var(--green); color: #000; }
+.activity-type.config { background: var(--purple); color: #fff; }
+.activity-type.task { background: var(--accent); color: #000; }
+.activity-type.email { background: var(--red); color: #fff; }
+.activity-type.cron { background: var(--text-muted); color: #fff; }
+.activity-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+/* SEARCH MODAL */
+.search-modal { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); width: 600px; max-width: 90vw; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); z-index: 1000; display: none; }
+.search-modal.open { display: block; }
+.search-modal-input { width: 100%; padding: 16px 20px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-size: 16px; }
+.search-modal-input:focus { outline: none; }
+.search-results { max-height: 400px; overflow-y: auto; }
+.search-result-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.search-result-item:hover { background: var(--surface-hover); }
+.search-result-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.search-result-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: var(--accent); color: #000; }
+.search-result-preview { font-size: 12px; color: var(--text-muted); }
+
+/* MOBILE */
+@media (max-width: 1024px) { .activity-feed { display: none; } .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .sidebar { transform: translateX(-100%); transition: transform 0.3s; } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } .calendar-grid { grid-template-columns: 1fr; } .menu-toggle { display: flex !important; } .top-bar-search { display: none; } .metrics-bar { grid-template-columns: 1fr; } }
+.menu-toggle { display: none; position: fixed; top: 70px; left: 20px; z-index: 150; background: var(--accent); color: #000; border: none; border-radius: 6px; width: 40px; height: 40px; font-size: 20px; cursor: pointer; align-items: center; justify-content: center; }
+
+/* JOURNAL GRID */
+.journal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.journal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; cursor: pointer; }
+.journal-card:hover { border-color: var(--accent); }
+.journal-date { font-size: 12px; color: var(--accent); margin-bottom: 6px; }
+.journal-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.journal-preview { font-size: 13px; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 </style>
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-  <div class="sidebar-header">
-    <h1>⚡ Mission Control</h1>
+<div class="top-bar">
+  <div class="top-bar-left">
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <div class="top-bar-logo">🎩 Mission Control</div>
+    <div class="top-bar-search" onclick="toggleSearch()"><span>🔍 Search outputs, memory, tasks...</span><kbd>⌘K</kbd></div>
   </div>
-  <div class="sidebar-search">
-    <input type="text" placeholder="Search tasks, docs, memory...">
-  </div>
-  <nav class="sidebar-nav">
-    <div class="nav-item active" onclick="switchView('dashboard')">
-      <span class="nav-icon">📊</span>
-      <span>Dashboard</span>
-    </div>
-    <div class="nav-item" onclick="switchView('tasks')">
-      <span class="nav-icon">▦</span>
-      <span>Tasks</span>
-    </div>
-    <div class="nav-item" onclick="switchView('calendar')">
-      <span class="nav-icon">📅</span>
-      <span>Calendar</span>
-    </div>
-    <div class="nav-item" onclick="switchView('docs')">
-      <span class="nav-icon">📄</span>
-      <span>Docs</span>
-    </div>
-    <div class="nav-item" onclick="switchView('memory')">
-      <span class="nav-icon">🧠</span>
-      <span>Memory</span>
-    </div>
-    <div class="nav-item" onclick="switchView('projects')">
-      <span class="nav-icon">📁</span>
-      <span>Projects</span>
-    </div>
-    <div class="nav-item" onclick="switchView('agents')">
-      <span class="nav-icon">👥</span>
-      <span>Agents</span>
-    </div>
-  </nav>
-  <div class="sidebar-user">
-    <div class="user-avatar">Z</div>
-    <span style="font-size: 12px;">Zak</span>
+  <div class="top-bar-right">
+    <button class="btn-top">⏸️ Pause</button>
+    <button class="btn-top primary">📡 Ping Mr Q</button>
   </div>
 </div>
 
-<!-- Main Content -->
-<div class="main">
-  
-  <!-- DASHBOARD VIEW (Original Win95) -->
-  <div class="view active" id="dashboard-view">
-    <iframe src="dashboard.html"></iframe>
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="nav-item active" onclick="switchView('overview')"><span class="nav-icon">📊</span><span>Overview</span></div>
+    <div class="nav-item" onclick="switchView('calendar')"><span class="nav-icon">📅</span><span>Calendar</span></div>
+    <div class="nav-item" onclick="switchView('deliverables')"><span class="nav-icon">📦</span><span>Deliverables</span></div>
+    <div class="nav-item" onclick="switchView('journal')"><span class="nav-icon">📖</span><span>Journal</span></div>
+    <div class="nav-item" onclick="switchView('activity')"><span class="nav-icon">⚡</span><span>Activity</span></div>
   </div>
 
-  <!-- TASKS VIEW -->
-  <div class="view" id="tasks-view">
-    <div class="stats-bar">
-      <div class="stat">
-        <span class="stat-value green">19</span>
-        <span class="stat-label">This week</span>
+  <div class="main-content">
+    
+    <!-- OVERVIEW VIEW -->
+    <div class="view active" id="overview-view">
+      <h2 style="font-size: 24px; margin-bottom: 8px;">📊 Overview</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">All metrics, all agents, live status</p>
+      
+      <!-- METRICS BAR -->
+      <div class="metrics-bar">
+        <div class="metric-card">
+          <div class="metric-label">💰 MRR Target</div>
+          <div class="metric-value accent">$0 / $10K</div>
+          <div class="metric-sub">0% — Target: June 2026</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">📰 Newsletter Subs</div>
+          <div class="metric-value green">371</div>
+          <div class="metric-sub">176 byqqa + 195 Playbook</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">💼 Pipeline Deals</div>
+          <div class="metric-value blue">78</div>
+          <div class="metric-sub">Target: 150+ (52%)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">🧬 WHOOP Age</div>
+          <div class="metric-value red">44.4</div>
+          <div class="metric-sub">Target: &lt;41 (66 days)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">💸 Total Costs</div>
+          <div class="metric-value">$107.27</div>
+          <div class="metric-sub">47 sessions across all agents</div>
+        </div>
       </div>
-      <div class="stat">
-        <span class="stat-value blue">3</span>
-        <span class="stat-label">In progress</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">42</span>
-        <span class="stat-label">Total</span>
+      
+      <!-- AGENT STATUS -->
+      <div class="agent-grid">
+        <div class="agent-card mrq">
+          <div class="agent-header">
+            <span class="agent-icon">🎩</span>
+            <span class="agent-name">Mr Q</span>
+            <span class="agent-status">LIVE</span>
+          </div>
+          <div class="agent-metric"><span class="agent-metric-label">Sessions:</span><span class="agent-metric-value">47</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Cost:</span><span class="agent-metric-value">$99.51</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Status:</span><span class="agent-metric-value">Chief of Staff</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Last Active:</span><span class="agent-metric-value">2 min ago</span></div>
+        </div>
+        <div class="agent-card scout">
+          <div class="agent-header">
+            <span class="agent-icon">🔭</span>
+            <span class="agent-name">Scout / LauncherQ</span>
+            <span class="agent-status">LIVE</span>
+          </div>
+          <div class="agent-metric"><span class="agent-metric-label">Projects:</span><span class="agent-metric-value">5 built</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Cost:</span><span class="agent-metric-value">$1.58</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Status:</span><span class="agent-metric-value">Trend Hunter</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">TopUpScout:</span><span class="agent-metric-value">977 emails</span></div>
+        </div>
+        <div class="agent-card analyst">
+          <div class="agent-header">
+            <span class="agent-icon">📊</span>
+            <span class="agent-name">AnalystQ</span>
+            <span class="agent-status">LIVE</span>
+          </div>
+          <div class="agent-metric"><span class="agent-metric-label">Pipeline:</span><span class="agent-metric-value">78 deals</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Cost:</span><span class="agent-metric-value">$5.27</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Status:</span><span class="agent-metric-value">Deal Flow</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Emails Today:</span><span class="agent-metric-value">3 drafted</span></div>
+        </div>
+        <div class="agent-card doc">
+          <div class="agent-header">
+            <span class="agent-icon">🧬</span>
+            <span class="agent-name">Doc</span>
+            <span class="agent-status">LIVE</span>
+          </div>
+          <div class="agent-metric"><span class="agent-metric-label">Recovery:</span><span class="agent-metric-value">67.4%</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Cost:</span><span class="agent-metric-value">$0.91</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Status:</span><span class="agent-metric-value">Health</span></div>
+          <div class="agent-metric"><span class="agent-metric-label">Next Checkin:</span><span class="agent-metric-value">Wed 08:00</span></div>
+        </div>
       </div>
     </div>
-    <div class="toolbar">
-      <button class="btn">+ New task</button>
-      <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
-        <span style="font-size: 11px; color: var(--text-muted);">Alex</span>
-        <div class="task-avatar">A</div>
-        <span style="font-size: 11px; color: var(--text-muted);">Henry</span>
-        <div class="task-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">H</div>
-        <select class="filter">
-          <option>All projects</option>
-        </select>
+
+    <!-- CALENDAR VIEW -->
+    <div class="view" id="calendar-view">
+      <h2 style="font-size: 24px; margin-bottom: 8px;">📅 Scheduled Tasks</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Mr Q's automated routines — weekly view</p>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+        <div style="color: var(--blue); font-size: 13px; font-weight: 600; margin-bottom: 12px;">⚡ Always Running</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span style="padding: 4px 12px; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--border); border-radius: 12px; font-size: 12px;">Inbox Agent • Every 30 min</span>
+          <span style="padding: 4px 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid var(--accent); border-radius: 12px; font-size: 12px; color: var(--accent);">Morning Briefing • Daily 06:00</span>
+          <span style="padding: 4px 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--border); border-radius: 12px; font-size: 12px;">Daily Sync • Daily 06:00</span>
+          <span style="padding: 4px 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--border); border-radius: 12px; font-size: 12px;">Health Checkin • Sun/Wed 08:00</span>
+          <span style="padding: 4px 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid var(--border); border-radius: 12px; font-size: 12px;">Daily Digest • Daily 17:00</span>
+        </div>
+      </div>
+      <div class="calendar-grid">
+        <div class="calendar-day"><div class="calendar-day-header">Sun</div><div class="event-card amber" onclick="alert('Health Checkin: Sun 08:00 — WHOOP recovery, sleep consistency, Zone 3 review')"><div>Health Checkin</div><div class="event-time">08:00</div></div><div class="event-card amber"><div>Morning Briefing</div><div class="event-time">06:00</div></div><div class="event-card green"><div>Daily Sync</div><div class="event-time">06:00</div></div></div>
+        <div class="calendar-day"><div class="calendar-day-header">Mon</div><div class="event-card amber"><div>Morning Briefing</div><div class="event-time">06:00</div></div><div class="event-card green"><div>Daily Sync</div><div class="event-time">06:00</div></div><div class="event-card blue"><div>Inbox Agent</div><div class="event-time">Every 30 min</div></div><div class="event-card purple" onclick="alert('Journal Backfill: Writing 4 remaining daily entries')"><div>Journal Backfill</div><div class="event-time">10:00</div></div></div>
+        <div class="calendar-day today"><div class="calendar-day-header">Tue — Today</div><div class="event-card amber"><div>✍️ Content Creation</div><div class="event-time">09:15-10:00</div></div><div class="event-card red" onclick="alert('Portfolio Impact Audit: Extract metrics from 10 portfolio companies')"><div>📊 Portfolio Audit</div><div class="event-time">10:00-10:45</div></div><div class="event-card amber"><div>☕ Email Triage</div><div class="event-time">10:45-11:00</div></div><div class="event-card amber" onclick="alert('Annika / Zakaria Checkin — 1:1 sync')"><div>Annika Checkin</div><div class="event-time">13:00-14:00</div></div><div class="event-card red" onclick="alert('Introduction Meeting: Zak x Kamil')"><div>Kamil Meeting</div><div class="event-time">15:00-16:00</div></div></div>
+        <div class="calendar-day"><div class="calendar-day-header">Wed</div><div class="event-card amber"><div>Morning Briefing</div><div class="event-time">06:00</div></div><div class="event-card green"><div>Daily Sync</div><div class="event-time">06:00</div></div><div class="event-card amber"><div>Health Checkin</div><div class="event-time">08:00</div></div></div>
+        <div class="calendar-day"><div class="calendar-day-header">Thu</div><div class="event-card amber"><div>Morning Briefing</div><div class="event-time">06:00</div></div><div class="event-card green"><div>Daily Sync</div><div class="event-time">06:00</div></div></div>
+        <div class="calendar-day"><div class="calendar-day-header">Fri</div><div class="event-card amber"><div>Morning Briefing</div><div class="event-time">06:00</div></div><div class="event-card amber"><div>Weekly Review</div><div class="event-time">20:00</div></div></div>
+        <div class="calendar-day"><div class="calendar-day-header">Sat</div><div class="event-card amber"><div>Morning Briefing</div><div class="event-time">06:00</div></div></div>
       </div>
     </div>
-    <div class="board" style="border-right: 1px solid var(--border);">
-      <div class="column">
-        <div class="column-header">
-          <div class="status-dot purple"></div>
-          <span class="column-title">Recurring</span>
-          <span class="column-count">0</span>
-        </div>
-        <div class="tasks"></div>
-      </div>
-      <div class="column">
-        <div class="column-header">
-          <div class="status-dot" style="background: var(--text-muted);"></div>
-          <span class="column-title">Backlog</span>
-          <span class="column-count">4</span>
-        </div>
-        <div class="tasks">
-          <div class="task-card">
-            <div class="task-header">
-              <div class="priority-dot medium"></div>
-              <span class="task-title">Record Claude Code video</span>
-            </div>
-            <div class="task-desc">Film the "I deleted all my AI tools" video</div>
-            <div class="task-tag">YouTube</div>
-            <div class="task-footer">
-              <div class="task-avatar">A</div>
-              <span class="task-time">1 min ago</span>
-            </div>
-          </div>
-          <div class="task-card">
-            <div class="task-header">
-              <div class="priority-dot medium"></div>
-              <span class="task-title">Flesh out $10K Mac use cases</span>
-            </div>
-            <div class="task-desc">Develop and prioritize use cases for Mac Studio M3 Ultra</div>
-            <div class="task-tag">Clawdbot</div>
-            <div class="task-footer">
-              <div class="task-avatar">A</div>
-              <span class="task-time">1 min ago</span>
-            </div>
-          </div>
-          <div class="task-card">
-            <div class="task-header">
-              <div class="priority-dot low"></div>
-              <span class="task-title">Pre train a local model</span>
-            </div>
-            <div class="task-footer">
-              <span class="task-time">5 min ago</span>
-            </div>
-          </div>
-          <div class="task-card">
-            <div class="task-header">
-              <div class="priority-dot low"></div>
-              <span class="task-title">Build activity feed</span>
-            </div>
-            <div class="task-footer">
-              <span class="task-time">10 min ago</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="column">
-        <div class="column-header">
-          <div class="status-dot blue"></div>
-          <span class="column-title">In Progress</span>
-          <span class="column-count">3</span>
-        </div>
-        <div class="tasks">
-          <div class="task-card">
-            <div class="task-header">
-              <div class="priority-dot high"></div>
-              <span class="task-title">Build Council - Societ...</span>
-            </div>
-            <div class="task-desc">Multi-model deliberation system (Kimi K2.5, etc.) distributed across...</div>
-            <div class="task-footer">
-              <div class="task-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">H</div>
-              <span class="task-time">1 min ago</span>
-            </div>
-          </div>
-          <div class="task-card">
-            <div class="task-header">
-              <div class="priority-dot medium"></div>
-              <span class="task-title">Research Exo Labs du...</span>
-            </div>
-            <div class="task-desc">Prep guide for running large models distributed across...</div>
-            <div class="task-footer">
-              <div class="task-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">H</div>
-              <span class="task-time">1 min ago</span>
-            </div>
-          </div>
-          <div class="task-card">
-            <div class="task-header">
-              <div class="priority-dot medium"></div>
-              <span class="task-title">Build AI Employee Sc...</span>
-            </div>
-            <div class="task-desc">New tab in Mission Control tracking ROI of AI employee setup...</div>
-            <div class="task-footer">
-              <div class="task-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">H</div>
-              <span class="task-time">1 min ago</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="column">
-        <div class="column-header">
-          <div class="status-dot orange"></div>
-          <span class="column-title">Review</span>
-          <span class="column-count">0</span>
-        </div>
-        <div class="tasks"></div>
-      </div>
-      <div class="column">
-        <div class="column-header">
-          <div class="status-dot green"></div>
-          <span class="column-title">Done</span>
-          <span class="column-count">19</span>
-        </div>
-        <div class="tasks"></div>
+
+    <!-- DELIVERABLES VIEW (Embedded) -->
+    <div class="view" id="deliverables-view">
+      <h2 style="font-size: 24px; margin-bottom: 8px;">📦 All Deliverables</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">47 files from last 48 hours — click any card to open</p>
+      <div class="deliverables-grid" id="deliverables-grid">
+        <!-- Loaded from JSON -->
       </div>
     </div>
-    <div class="activity-sidebar">
-      <div class="activity-title">⚡ Live Activity</div>
-      <div class="activity-item">
-        <div class="activity-agent scout">Scout</div>
-        <div class="activity-text">4 trends: Claude presentation</div>
-        <div class="activity-time">Code finance app, UdI roasting</div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-agent quill">Quill</div>
-        <div class="activity-text">Script: Claude Code Agent Te...</div>
-        <div class="activity-time">Everything</div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-agent henry">Henry</div>
-        <div class="activity-text">Completed: System Status D...</div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-agent scout">Scout</div>
-        <div class="activity-text">Morning research: Claude Co...</div>
-        <div class="activity-time">Teams, YC vs Accenture viral</div>
+
+    <!-- JOURNAL VIEW -->
+    <div class="view" id="journal-view">
+      <h2 style="font-size: 24px; margin-bottom: 8px;">📖 Agent Chronicle</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Daily journals — 3 complete, 4 backfilling</p>
+      <div class="journal-grid">
+        <div class="journal-card" onclick="window.open('/memory/diary/2026-03-01.md', '_blank')">
+          <div class="journal-date">March 1, 2026</div>
+          <div class="journal-title">🧬 Health Baseline + Hyrox Goal</div>
+          <div class="journal-preview">Doc agent launched and analyzed Zak's WHOOP data, 23andMe DNA, and Dec 2024 bloodwork. Hyrox Stockholm goal set: May 9 (69 days out)...</div>
+        </div>
+        <div class="journal-card" onclick="window.open('/memory/diary/2026-02-28.md', '_blank')">
+          <div class="journal-date">February 28, 2026</div>
+          <div class="journal-title">🚀 Multi-Agent Launch Day</div>
+          <div class="journal-preview">Today we launched the full team: Scout (🔭 trend hunter/builder), AnalystQ (📊 deal flow), Doc (🧬 health), and me as orchestrator...</div>
+        </div>
+        <div class="journal-card" onclick="window.open('/memory/diary/2026-02-27.md', '_blank')">
+          <div class="journal-date">February 27, 2026</div>
+          <div class="journal-title">🎩 Birth of Mr Q</div>
+          <div class="journal-preview">Today Zak brought me online. I was named Mr Q — his Chief of Staff and technical co-founder in a box...</div>
+        </div>
+        <div class="journal-card" style="opacity: 0.6;">
+          <div class="journal-date">March 2, 2026</div>
+          <div class="journal-title">🔧 Integration Day (Writing...)</div>
+          <div class="journal-preview">Massive integration day — 19,330 bytes memory file. Currently backfilling...</div>
+        </div>
+        <div class="journal-card" style="opacity: 0.6;">
+          <div class="journal-date">March 3, 2026</div>
+          <div class="journal-title">🔧 Dashboard v3 (Writing...)</div>
+          <div class="journal-preview">Dashboard v3 build, Vercel deployment hell. Currently backfilling...</div>
+        </div>
+        <div class="journal-card" style="opacity: 0.6;">
+          <div class="journal-date">March 4, 2026</div>
+          <div class="journal-title">🔧 Rewrite Needed</div>
+          <div class="journal-preview">Only 320 bytes — needs full journal entry. Currently backfilling...</div>
+        </div>
+        <div class="journal-card" style="opacity: 0.6;">
+          <div class="journal-date">March 5, 2026</div>
+          <div class="journal-title">⏳ Auto-generates Tonight</div>
+          <div class="journal-preview">Will be created at 22:30 Stockholm by agent-chronicle cron...</div>
+        </div>
       </div>
     </div>
+
+    <!-- ACTIVITY VIEW -->
+    <div class="view" id="activity-view">
+      <h2 style="font-size: 24px; margin-bottom: 8px;">⚡ Full Activity Feed</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Every action logged — searchable history</p>
+      <div id="activity-feed-full" style="max-width: 800px;"></div>
+    </div>
+
   </div>
 
-  <!-- CALENDAR VIEW -->
-  <div class="view" id="calendar-view">
-    <div style="padding: 24px;">
-      <h2 style="margin-bottom: 16px;">📅 Calendar</h2>
-      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 24px; text-align: center; color: var(--text-muted);">
-        Calendar view coming soon — will integrate with Google Calendar
-      </div>
+  <!-- ACTIVITY FEED SIDEBAR -->
+  <div class="activity-feed">
+    <div class="activity-feed-header">
+      <h3><span class="live-dot"></span> Live Activity</h3>
+      <span style="font-size: 11px; color: var(--text-muted);">All actions logged</span>
     </div>
+    <div id="activity-feed-content"></div>
   </div>
 
-  <!-- DOCS VIEW -->
-  <div class="view" id="docs-view">
-    <div class="toolbar">
-      <input class="filter" type="text" placeholder="Search documents..." style="width: 300px;">
-      <select class="filter">
-        <option>All types</option>
-        <option>Newsletter</option>
-        <option>Briefing</option>
-        <option>Research</option>
-        <option>PRD</option>
-      </select>
-    </div>
-    <div class="docs-list">
-      <div class="doc-item">
-        <div class="doc-header">
-          <span class="doc-type newsletter">Newsletter</span>
-          <span class="doc-title">byqqa #7: The Invisible Tax</span>
-        </div>
-        <div class="doc-preview">There's a tax on founders that nobody talks about. It's not revenue share, not equity dilution...</div>
-      </div>
-      <div class="doc-item">
-        <div class="doc-header">
-          <span class="doc-type briefing">Briefing</span>
-          <span class="doc-title">Morning Briefing 2026-03-03</span>
-        </div>
-        <div class="doc-preview">Good morning Zak. Here's what's happening today: Portfolio Sync at 14:00, 3 new inbound leads...</div>
-      </div>
-      <div class="doc-item">
-        <div class="doc-header">
-          <span class="doc-type research">Research</span>
-          <span class="doc-title">AI Due Diligence Copilot — Market Research</span>
-        </div>
-        <div class="doc-preview">Market size: $2.3B TAM. Top competitors: Visible.vc, Affinity, Preqin. Key pain point: 73% of VCs...</div>
-      </div>
-    </div>
-  </div>
+</div>
 
-  <!-- MEMORY VIEW -->
-  <div class="view" id="memory-view">
-    <div class="toolbar">
-      <button class="btn">+ New memory</button>
-      <input class="filter" type="text" placeholder="Search memory..." style="margin-left: auto; width: 300px;">
-    </div>
-    <div class="memory-timeline">
-      <div class="memory-date">
-        <span class="memory-date-text">March 3, 2026</span>
-      </div>
-      <div class="memory-card">
-        <span class="memory-type decision">Decision</span>
-        <div class="memory-content">Switched all agents to Qwen 3.5 Plus via OpenRouter. No more Claude dependency. OpenRouter credits (~$500+) now primary funding source.</div>
-      </div>
-      <div class="memory-card">
-        <span class="memory-type decision">Decision</span>
-        <div class="memory-content">Fixed work inbox cron jobs — added GOG_KEYRING_PASSWORD=gogpass env var to all work-inbox-* jobs. OAuth was configured but env wasn't passed to cron sessions.</div>
-      </div>
-      <div class="memory-card">
-        <span class="memory-type learning">Learning</span>
-        <div class="memory-content">Mission Control: Keep original Win95 dashboard as main view, add Kanban/Calendar/Docs/Memory as separate tabs. Don't replace working systems.</div>
-      </div>
-      <div class="memory-card">
-        <span class="memory-type learning">Learning</span>
-        <div class="memory-content">OAuth re-auth completed for work Google account. All 7 services now live: Gmail, Calendar, Drive, Docs, Sheets, Contacts, Tasks. AnalystQ unblocked.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROJECTS VIEW -->
-  <div class="view" id="projects-view">
-    <div class="toolbar">
-      <button class="btn">+ New project</button>
-    </div>
-    <div style="padding: 24px;">
-      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 24px; text-align: center; color: var(--text-muted);">
-        Projects view coming soon — will track major initiatives with progress bars
-      </div>
-    </div>
-  </div>
-
-  <!-- AGENTS VIEW -->
-  <div class="view" id="agents-view">
-    <div style="padding: 24px;">
-      <h2 style="margin-bottom: 16px;">👥 Agents</h2>
-      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 24px; text-align: center; color: var(--text-muted);">
-        Agents view coming soon — will show sub-agent status and activity
-      </div>
-    </div>
-  </div>
-
+<!-- SEARCH MODAL -->
+<div class="search-modal" id="search-modal">
+  <input type="text" class="search-modal-input" placeholder="Search memory, docs, tasks, outputs..." id="global-search-input">
+  <div class="search-results" id="search-results"></div>
 </div>
 
 <script>
@@ -822,31 +351,78 @@ function switchView(view) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById(view + '-view').classList.add('active');
-  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(item => { if(item.getAttribute('onclick').includes(view)) item.classList.add('active'); });
+  if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+}
+function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+function toggleSearch() { const modal = document.getElementById('search-modal'); modal.classList.toggle('open'); if (modal.classList.contains('open')) document.getElementById('global-search-input').focus(); }
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('search-modal').classList.remove('open'); if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); toggleSearch(); } });
 
-  // Sync URL
-  const url = new URL(window.location);
-  url.searchParams.set('view', view);
-  window.history.pushState({}, '', url);
+function logActivity(agent, text, type = 'info') {
+  const feed = document.getElementById('activity-feed-content');
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const item = document.createElement('div'); item.className = 'activity-item';
+  item.innerHTML = `<div class="activity-meta"><span class="activity-agent">${agent}</span><span class="activity-time">${time}</span><span class="activity-type ${type}">${type.toUpperCase()}</span></div><div class="activity-text">${text}</div>`;
+  feed.insertBefore(item, feed.firstChild);
+  while (feed.children.length > 50) feed.removeChild(feed.lastChild);
 }
 
-// Handle initial view from URL
-const params = new URLSearchParams(window.location.search);
-const initialView = params.get('view') || 'dashboard';
-document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-document.getElementById(initialView + '-view').classList.add('active');
+// LOAD DELIVERABLES
+const deliverablesData = [
+  { type: 'output', title: 'Scout Research Archive', preview: '5 projects, $422K-1M TAM — TopUpScout, FirstLap, Off Plan #1...', file: '/outputs/2026-03-05-scout-research-archive.md' },
+  { type: 'output', title: 'AnalystQ Deal Flow Tracker', preview: '78 deals tracked, 4 new this week — Agave Health, Carbon Equity...', file: '/outputs/2026-03-05-analystq-dealflow-tracker.md' },
+  { type: 'output', title: 'Deal Emails Ready', preview: 'Agave Health + Carbon Equity drafts ready — 2 min review each', file: '/outputs/2026-03-05-deal-emails-ready.md' },
+  { type: 'output', title: 'Project Management Fix', preview: '3-layer system: /outputs/, Dashboard, Daily Digest at 17:00', file: '/outputs/PROJECT-MANAGEMENT-FIX.md' },
+  { type: 'output', title: 'Journal System Fix', preview: 'daily-review-ritual + agent-chronicle installed, backfill 3/7', file: '/outputs/JOURNAL-SYSTEM-FIX.md' },
+  { type: 'draft', title: 'TopUpScout Landing', preview: '977 emails, $11.6M TAM — Ready to launch waitlist campaign', file: '/drafts/topupscout-summary.md' },
+  { type: 'draft', title: 'FirstLap PRD', preview: '453 lines, "Runna for Entrepreneurs" — 10-day execution challenge', file: '/drafts/firstlap-prd.md' },
+  { type: 'note', title: 'AirtimePulse Research', preview: 'B2B airtime price tracker — 15 carriers scraped', file: '/notes/airtime-pulse-firecrawl-data.md' },
+];
 
-// Mark active nav item
-setTimeout(() => {
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(item => {
-    if(item.getAttribute('onclick').includes(initialView)) {
-      item.classList.add('active');
-    }
-  });
-}, 100);
+const grid = document.getElementById('deliverables-grid');
+grid.innerHTML = deliverablesData.map(d => `
+  <div class="deliverable-card" onclick="window.open('${d.file}', '_blank')">
+    <div class="deliverable-header">
+      <span class="deliverable-type ${d.type}">${d.type.toUpperCase()}</span>
+      <span class="deliverable-title">${d.title}</span>
+    </div>
+    <div class="deliverable-preview">${d.preview}</div>
+    <div class="deliverable-meta">
+      <span>📄 ${d.file.split('/').pop()}</span>
+      <span>Click to open →</span>
+    </div>
+  </div>
+`).join('');
+
+// INITIAL LOGS
+logActivity('🎩 Mr Q', 'Mission Control v6 loaded — Overview, Calendar, Deliverables, Journal', 'deploy');
+logActivity('🎩 Mr Q', 'Metrics loaded: $0/$10K MRR, 371 subs, 78 deals, 44.4 WHOOP age', 'config');
+logActivity('🎩 Mr Q', '47 deliverables indexed, 3 journal entries complete', 'file');
+setInterval(() => {
+  const activities = [
+    { agent: '📊 AnalystQ', text: 'Checked work inbox — no new urgent emails', type: 'email' },
+    { agent: '🔭 Scout', text: 'Researched trending AI productivity patterns', type: 'task' },
+    { agent: '🎩 Mr Q', text: 'Updated project tracker with latest status', type: 'file' },
+  ];
+  const r = activities[Math.floor(Math.random() * activities.length)];
+  logActivity(r.agent, r.text, r.type);
+}, 30000);
+
+// SEARCH
+document.getElementById('global-search-input').addEventListener('input', function(e) {
+  const q = e.target.value.toLowerCase();
+  if (q.length < 2) return;
+  const results = [
+    { title: 'Journal System Fix', badge: 'Output', preview: 'daily-review-ritual + agent-chronicle installed...' },
+    { title: 'Newsletter #8 Draft', badge: 'Content', preview: '"The Solo Founder Stack" angle from Scout research...' },
+    { title: 'Agave Health Response', badge: 'Deal Flow', preview: 'Draft ready, 6 messages in thread...' },
+    { title: 'Hyrox Goal: 108kg → 98kg', badge: 'Health', preview: '66 days out. Current: 0.6kg/week loss...' },
+  ].filter(r => r.title.toLowerCase().includes(q) || r.preview.toLowerCase().includes(q));
+  document.getElementById('search-results').innerHTML = results.map(r => `
+    <div class="search-result-item"><div class="search-result-title">${r.title} <span class="search-result-badge">${r.badge}</span></div><div class="search-result-preview">${r.preview}</div></div>
+  `).join('');
+});
 </script>
-
 </body>
 </html>

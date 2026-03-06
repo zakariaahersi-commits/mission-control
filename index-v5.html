@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎩 Mission Control</title>
+<style>
+:root {
+  --bg: #0f0f1a;
+  --bg-dark: #0a0a12;
+  --surface: #1a1a2e;
+  --surface-hover: #252542;
+  --border: #2a2a4a;
+  --border-hover: #3a3a5a;
+  --text: #e0e0e0;
+  --text-secondary: #a0a0b0;
+  --text-muted: #606070;
+  --accent: #f59e0b;
+  --accent-green: #10b981;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-red: #ef4444;
+  --calendar-red: #dc2626;
+  --calendar-teal: #0d9488;
+  --calendar-orange: #ea580c;
+  --calendar-green: #16a34a;
+  --calendar-blue: #1e3a8a;
+  --calendar-amber: #d97706;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Space Background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(1px 1px at 10% 10%, #ffffff 1px, transparent 0),
+    radial-gradient(1px 1px at 20% 20%, #ffffff 1px, transparent 0),
+    radial-gradient(1px 1px at 30% 30%, #ffffff 1px, transparent 0),
+    radial-gradient(1px 1px at 40% 40%, #ffffff 1px, transparent 0),
+    radial-gradient(1px 1px at 50% 50%, #ffffff 1px, transparent 0),
+    radial-gradient(1px 1px at 60% 60%, #ffffff 1px, transparent 0),
+    radial-gradient(1px 1px at 70% 70%, #ffffff 1px, transparent 0),
+    radial-gradient(1px 1px at 80% 80%, #ffffff 1px, transparent 0);
+  background-size: 200px 200px;
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Top Bar */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.top-bar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.top-bar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  min-width: 300px;
+  cursor: pointer;
+}
+
+.top-bar-search:hover {
+  border-color: var(--border-hover);
+}
+
+.top-bar-search kbd {
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-top {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-top:hover {
+  background: var(--surface);
+  border-color: var(--border-hover);
+}
+
+.btn-top.primary {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* Layout */
+.layout {
+  display: flex;
+  height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background: var(--bg-dark);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 56px;
+  bottom: 0;
+  left: 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav {
+  padding: 12px 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: var(--surface);
+  color: var(--text);
+  border-left-color: var(--accent);
+}
+
+.nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 220px;
+  margin-top: 56px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+/* Calendar View */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.calendar-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.calendar-view-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-toggle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.btn-toggle.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+.always-running {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.always-running-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-blue);
+}
+
+.pill-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+
+.pill.active {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+
+.calendar-day {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 600px;
+}
+
+.calendar-day-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.calendar-day.today .calendar-day-header {
+  color: var(--accent);
+}
+
+.event-card {
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  border-left: 3px solid;
+}
+
+.event-card.red {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: var(--calendar-red);
+  color: #fca5a5;
+}
+
+.event-card.teal {
+  background: rgba(13, 148, 136, 0.1);
+  border-color: var(--calendar-teal);
+  color: #5eead4;
+}
+
+.event-card.orange {
+  background: rgba(234, 88, 12, 0.1);
+  border-color: var(--calendar-orange);
+  color: #fdba74;
+}
+
+.event-card.green {
+  background: rgba(22, 163, 74, 0.1);
+  border-color: var(--calendar-green);
+  color: #86efac;
+}
+
+.event-card.blue {
+  background: rgba(30, 58, 138, 0.1);
+  border-color: var(--calendar-blue);
+  color: #93c5fd;
+}
+
+.event-card.amber {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: var(--calendar-amber);
+  color: #fcd34d;
+}
+
+.event-time {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* Activity Feed (Right Sidebar) */
+.activity-feed {
+  position: fixed;
+  right: 0;
+  top: 56px;
+  bottom: 0;
+  width: 320px;
+  background: var(--bg-dark);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.activity-feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-feed-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.activity-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.activity-agent {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.activity-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.activity-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.live-indicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Search Modal (⌘K) */
+.search-modal {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  max-width: 90vw;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: none;
+}
+
+.search-modal.open {
+  display: block;
+}
+
+.search-modal-input {
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.search-modal-input:focus {
+  outline: none;
+}
+
+.search-results {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-result-item:hover {
+  background: var(--surface-hover);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.search-result-preview {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.search-result-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 8px;
+  background: var(--accent);
+  color: #000;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="top-bar-left">
+    <div class="top-bar-logo">
+      ⚡ <span>Mission Control</span>
+    </div>
+    <div class="top-bar-search" onclick="toggleSearch()">
+      🔍 <span>Search...</span>
+      <kbd>⌘K</kbd>
+    </div>
+  </div>
+  <div class="top-bar-right">
+    <button class="btn-top">⏸️ Pause</button>
+    <button class="btn-top primary">📡 Ping Mr Q</button>
+    <button class="btn-top">👁️</button>
+    <button class="btn-top">🔄</button>
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+  
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <nav class="sidebar-nav">
+      <div class="nav-item" onclick="switchView('tasks')">
+        <span class="nav-icon">✓</span>
+        <span class="nav-label">Tasks</span>
+      </div>
+      <div class="nav-item" onclick="switchView('agents')">
+        <span class="nav-icon">🤖</span>
+        <span class="nav-label">Agents</span>
+      </div>
+      <div class="nav-item" onclick="switchView('content')">
+        <span class="nav-icon">✎</span>
+        <span class="nav-label">Content</span>
+      </div>
+      <div class="nav-item" onclick="switchView('approvals')">
+        <span class="nav-icon">✓</span>
+        <span class="nav-label">Approvals</span>
+      </div>
+      <div class="nav-item" onclick="switchView('council')">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Council</span>
+      </div>
+      <div class="nav-item active" onclick="switchView('calendar')">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Calendar</span>
+      </div>
+      <div class="nav-item" onclick="switchView('projects')">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">Projects</span>
+      </div>
+      <div class="nav-item" onclick="switchView('memory')">
+        <span class="nav-icon">🧠</span>
+        <span class="nav-label">Memory</span>
+      </div>
+      <div class="nav-item" onclick="switchView('docs')">
+        <span class="nav-icon">📄</span>
+        <span class="nav-label">Docs</span>
+      </div>
+      <div class="nav-item" onclick="switchView('team')">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Team</span>
+      </div>
+      <div class="nav-item" onclick="switchView('activity')">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Activity</span>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    
+    <!-- CALENDAR VIEW (Active) -->
+    <div class="view active" id="calendar-view">
+      <div class="calendar-header">
+        <div>
+          <h2>Scheduled Tasks</h2>
+          <p style="color: var(--text-muted); margin-top: 4px;">Mr Q's automated routines</p>
+        </div>
+        <div class="calendar-view-toggle">
+          <button class="btn-toggle active">Week</button>
+          <button class="btn-toggle">Today</button>
+        </div>
+      </div>
+      
+      <div class="always-running">
+        <div class="always-running-header">
+          ⚡ Always Running
+        </div>
+        <div class="pill-row">
+          <span class="pill">Inbox Agent • Every 30 min</span>
+          <span class="pill active">Morning Briefing • Daily 06:00</span>
+          <span class="pill">Daily Sync • Daily 06:00</span>
+          <span class="pill">Health Checkin • Sun/Wed 08:00</span>
+          <span class="pill">Daily Digest • Daily 17:00</span>
+        </div>
+      </div>
+      
+      <div class="calendar-grid">
+        <!-- Sunday -->
+        <div class="calendar-day">
+          <div class="calendar-day-header">Sun</div>
+          <div class="event-card amber">
+            <div>Health Checkin</div>
+            <div class="event-time">08:00</div>
+          </div>
+          <div class="event-card orange">
+            <div>Morning Briefing</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card green">
+            <div>Daily Sync</div>
+            <div class="event-time">06:00</div>
+          </div>
+        </div>
+        
+        <!-- Monday -->
+        <div class="calendar-day">
+          <div class="calendar-day-header">Mon</div>
+          <div class="event-card orange">
+            <div>Morning Briefing</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card green">
+            <div>Daily Sync</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card teal">
+            <div>Inbox Agent</div>
+            <div class="event-time">Every 30 min</div>
+          </div>
+          <div class="event-card amber">
+            <div>Journal Backfill</div>
+            <div class="event-time">10:00</div>
+          </div>
+          <div class="event-card blue">
+            <div>Daily Digest</div>
+            <div class="event-time">17:00</div>
+          </div>
+        </div>
+        
+        <!-- Tuesday (Today) -->
+        <div class="calendar-day today">
+          <div class="calendar-day-header">Tue — Today</div>
+          <div class="event-card orange">
+            <div>Morning Briefing</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card green">
+            <div>Daily Sync</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card red">
+            <div>Dashboard v4 Deploy</div>
+            <div class="event-time">08:25</div>
+          </div>
+          <div class="event-card amber">
+            <div>Journal Backfill</div>
+            <div class="event-time">10:00</div>
+          </div>
+          <div class="event-card teal">
+            <div>Inbox Agent</div>
+            <div class="event-time">Every 30 min</div>
+          </div>
+          <div class="event-card blue">
+            <div>Daily Digest</div>
+            <div class="event-time">17:00</div>
+          </div>
+        </div>
+        
+        <!-- Wednesday -->
+        <div class="calendar-day">
+          <div class="calendar-day-header">Wed</div>
+          <div class="event-card orange">
+            <div>Morning Briefing</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card green">
+            <div>Daily Sync</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card amber">
+            <div>Health Checkin</div>
+            <div class="event-time">08:00</div>
+          </div>
+          <div class="event-card teal">
+            <div>Inbox Agent</div>
+            <div class="event-time">Every 30 min</div>
+          </div>
+          <div class="event-card blue">
+            <div>Daily Digest</div>
+            <div class="event-time">17:00</div>
+          </div>
+        </div>
+        
+        <!-- Thursday -->
+        <div class="calendar-day">
+          <div class="calendar-day-header">Thu</div>
+          <div class="event-card orange">
+            <div>Morning Briefing</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card green">
+            <div>Daily Sync</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card red">
+            <div>Birches Health Meeting</div>
+            <div class="event-time">15:00</div>
+          </div>
+          <div class="event-card teal">
+            <div>Inbox Agent</div>
+            <div class="event-time">Every 30 min</div>
+          </div>
+          <div class="event-card blue">
+            <div>Daily Digest</div>
+            <div class="event-time">17:00</div>
+          </div>
+        </div>
+        
+        <!-- Friday -->
+        <div class="calendar-day">
+          <div class="calendar-day-header">Fri</div>
+          <div class="event-card orange">
+            <div>Morning Briefing</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card green">
+            <div>Daily Sync</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card teal">
+            <div>Inbox Agent</div>
+            <div class="event-time">Every 30 min</div>
+          </div>
+          <div class="event-card amber">
+            <div>Weekly Review</div>
+            <div class="event-time">20:00</div>
+          </div>
+          <div class="event-card blue">
+            <div>Daily Digest</div>
+            <div class="event-time">17:00</div>
+          </div>
+        </div>
+        
+        <!-- Saturday -->
+        <div class="calendar-day">
+          <div class="calendar-day-header">Sat</div>
+          <div class="event-card orange">
+            <div>Morning Briefing</div>
+            <div class="event-time">06:00</div>
+          </div>
+          <div class="event-card green">
+            <div>Daily Sync</div>
+            <div class="event-time">06:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other Views (Placeholders) -->
+    <div class="view" id="tasks-view">
+      <h2>Tasks</h2>
+      <p style="color: var(--text-muted); margin-top: 12px;">Coming soon — task management board</p>
+    </div>
+    
+    <div class="view" id="agents-view">
+      <h2>Agents</h2>
+      <p style="color: var(--text-muted); margin-top: 12px;">Coming soon — agent roster & status</p>
+    </div>
+    
+    <div class="view" id="projects-view">
+      <h2>Projects</h2>
+      <p style="color: var(--text-muted); margin-top: 12px;">Coming soon — project tracking grid</p>
+    </div>
+
+  </div>
+
+  <!-- Activity Feed (Right Sidebar) -->
+  <div class="activity-feed">
+    <div class="activity-feed-header">
+      <h3><span class="live-indicator"></span>Live Activity</h3>
+      <span style="font-size: 11px; color: var(--text-muted);">All actions logged</span>
+    </div>
+    
+    <div id="activity-feed-content">
+      <!-- Activity items will be logged here -->
+    </div>
+  </div>
+
+</div>
+
+<!-- Search Modal (⌘K) -->
+<div class="search-modal" id="search-modal">
+  <input type="text" class="search-modal-input" placeholder="Search memory, docs, tasks, outputs..." id="global-search-input">
+  <div class="search-results" id="search-results">
+    <!-- Search results appear here -->
+  </div>
+</div>
+
+<script>
+// View switching
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(view + '-view').classList.add('active');
+  
+  // Find and activate nav item
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    if(item.getAttribute('onclick').includes(view)) {
+      item.classList.add('active');
+    }
+  });
+}
+
+// Search modal
+function toggleSearch() {
+  const modal = document.getElementById('search-modal');
+  modal.classList.toggle('open');
+  if (modal.classList.contains('open')) {
+    document.getElementById('global-search-input').focus();
+  }
+}
+
+// Close search on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('search-modal').classList.remove('open');
+  }
+  
+  // ⌘K to open search
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    toggleSearch();
+  }
+});
+
+// Activity feed logging
+function logActivity(agent, text, type = 'info') {
+  const feed = document.getElementById('activity-feed-content');
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  
+  const item = document.createElement('div');
+  item.className = 'activity-item';
+  item.innerHTML = `
+    <div class="activity-meta">
+      <span class="activity-agent">${agent}</span>
+      <span class="activity-time">${time}</span>
+    </div>
+    <div class="activity-text">${text}</div>
+  `;
+  
+  feed.insertBefore(item, feed.firstChild);
+  
+  // Keep only last 50 items
+  while (feed.children.length > 50) {
+    feed.removeChild(feed.lastChild);
+  }
+}
+
+// Initial activity log
+logActivity('🎩 Mr Q', 'Mission Control v5 initialized');
+logActivity('🎩 Mr Q', 'Calendar view loaded with weekly schedule');
+logActivity('🎩 Mr Q', 'Activity feed started — logging all actions');
+logActivity('🎩 Mr Q', 'Global search ready (⌘K)');
+
+// Search functionality
+document.getElementById('global-search-input').addEventListener('input', function(e) {
+  const query = e.target.value;
+  if (query.length < 2) return;
+  
+  // Demo search results
+  const results = document.getElementById('search-results');
+  results.innerHTML = `
+    <div class="search-result-item">
+      <div class="search-result-title">Journal System Fix <span class="search-result-badge">Output</span></div>
+      <div class="search-result-preview">daily-review-ritual + agent-chronicle installed. Backfill in progress...</div>
+    </div>
+    <div class="search-result-item">
+      <div class="search-result-title">Newsletter #8 Draft <span class="search-result-badge">Content</span></div>
+      <div class="search-result-preview">"The Solo Founder Stack" angle from Scout research...</div>
+    </div>
+    <div class="search-result-item">
+      <div class="search-result-title">Agave Health Response <span class="search-result-badge">Deal Flow</span></div>
+      <div class="search-result-preview">Draft ready, 6 messages in thread...</div>
+    </div>
+    <div class="search-result-item">
+      <div class="search-result-title">Hyrox Goal: 108kg → 98kg <span class="search-result-badge">Health</span></div>
+      <div class="search-result-preview">66 days out. Current: 0.6kg/week loss, need 1.05kg/week...</div>
+    </div>
+  `;
+});
+
+// Demo: Log periodic activities
+setInterval(() => {
+  const activities = [
+    { agent: '📊 AnalystQ', text: 'Checked work inbox — no new urgent emails' },
+    { agent: '🔭 Scout', text: 'Researched trending AI productivity patterns' },
+    { agent: '🎩 Mr Q', text: 'Updated project tracker with latest status' },
+    { agent: '🧬 Doc', text: 'WHOOP recovery: 67.4% (off track for 80%+)' },
+  ];
+  
+  const random = activities[Math.floor(Math.random() * activities.length)];
+  logActivity(random.agent, random.text);
+}, 30000); // Log new activity every 30 seconds
+
+console.log('🎩 Mission Control v5 — Keyboard Shortcuts:');
+console.log('  ⌘/Ctrl + K: Open search');
+console.log('  Escape: Close search');
+</script>
+
+</body>
+</html>

@@ -10,6 +10,7 @@ interface Task {
   agent: string;
   timeAgo: string;
   hasAttachment?: string;
+  projectIcon?: string;
   priority: "high" | "medium" | "low";
 }
 
